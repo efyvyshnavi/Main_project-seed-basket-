@@ -1,0 +1,65 @@
+<html>
+<head>
+<title>REGISTER Form</title>
+<link rel="stylesheet" type="text/css" href="body.css">
+<a href="login.php"></a>
+<a href="home.php"></a>
+</head>
+<body>
+   <div class="container">
+        <div class="heading">Registeration</div>
+        <form action="reg.php"method="post">
+            <div class="card-details">
+                 <div class="card-box">
+                    <span class="details"><h3>Full Name</h3></span>
+                    <input type="text"name="full_name" placeholder="enter your name full name">
+                 </div>
+                 <div class="card-box">
+                    <span class="details"><h3>Email</h3></span>
+                    <input type="email"name="email" placeholder="enter your name email">
+                 </div>
+                 <div class="card-box">
+                    <span class="details"><h3>Phone No</h3></span>
+                    <input type="phone"name="phone_no" placeholder="enter your phone number">
+                 </div>
+                 <div class="card-box">
+                    <span class="details"><h3>DOB</h3></span>
+                    <input type="date"name="dob" placeholder="mm/dd/yy">
+                 </div>
+                 <div class="card-box">
+                    <span class="details"><h3> Address</h3></h3></span>
+                    <input type="text"name="address" placeholder="enter your address">
+                 </div>
+                 <div class="card-box">
+                    <span class="details"><h3>Username</h3></span>
+                    <input type="text"name="username" placeholder="enter your username">
+                 </div>
+                 <div class="card-box">
+                    <span class="details"><h3>password</h3></span>
+                    <input type="password"name="password" placeholder="enter your password">
+                 </div>
+                 <div class="card-box">
+                    <span class="details"> <h3>Confirm-Password</h3></h3></span>
+                    <input type="password" name="cpassword" placeholder="re-enter your password">
+                 </div>
+            </div>
+            <div class="circular-form">
+                <span class="circle-title"><h3>Gender</h3></span>
+                <div class="category">
+                    <input type="radio" name="gender"value="male"><h3>male</h3>
+                    <input type="radio" name="gender"value="female"><h3>female</h3>
+                    <input type="radio" name="gender"value="others"><h3>others</h3>
+                </div>
+            </div>
+            <div class="button">
+                <input type="submit"name="submit" value="submit">
+            </div>
+        </form>
+    </div>
+  
+</body>
+</html>
+
+
+
+
