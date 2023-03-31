@@ -1,203 +1,385 @@
 <?php
 session_start();
-ob_start();
 include ('config.php');
 date_default_timezone_set('Asia/Kolkata');// change according timezone
 $currentTime = date( 'd-m-Y h:i:s A', time () );
+if (!isset($_SESSION['username'])) {
+  header("Location: admin-login.php");
+  exit();
+}
+
 
 if(isset($_POST['su']))
 {
 
-  $subid=$_POST['sub_id'];
-	$subcat=$_POST['subcate'];
+  $subid=$_POST['subid'];
+	$subcat=$_POST['subcat'];
   
   
-$sql="UPDATE tbl_subcategory set subcategory='$subcat',updationDate='$currentTime' where subid='$subid'";
-if($sql)
+$sqlq="UPDATE tbl_subcategory set subcategory='$subcat',updationDate='$currentTime' where subid='$subid'";
+$query=mysqli_query($conn,$sqlq);
+if($query)
 {
-  
-  $_SESSION['up'] = "SubCategory updated successfully";
-  header('location:adminsubcat.php');
- 
-//  header('Location: adminsubcat.php');
-//  exit();
+
+  $_SESSION['msga'] = "Subcategory updated successfully";
+  header('location:subcategory.php');
 }
 
 }
 ?>
-<!Doctype HTML>
-	<html>
-	<head>
-		<title></title>
-		<link rel="stylesheet" href="sty.css" type="text/css"/>
-		<link rel="stylesheet" href="subcategory.css" type="text/css"/>
-		<link rel="stylesheet" href="head.css" type="text/css"/>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-		<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Admin-Online Seed Basket</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
 		<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
 		<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="mainheader.css" type="text/css"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-		
-
-
-<style>
-body {font-family: Arial, Helvetica, sans-serif;}
-
-/* The Modal (background) */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  padding-top: 90px; /* Location of the box */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
-
-/* The Close Button */
-.close {
-  color: Black;
-  float: center;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-form.example input[type=text] {
-  padding: 7px;
-  font-size: 14px;
-  border: 1px solid grey;
-  float: left;
-  width: 70%;
-  background: #f1f1f1;
-}
-
-form.example button {
-  float: left;
-  width: 20%;
-  padding: 9px;
-  background: #3630a3;
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+  <style>
+    #su {
+  background-color: #0d6efd;
   color: white;
-  font-size: 17px;
-  border: 1px solid grey;
-  border-left: none;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
   cursor: pointer;
 }
-form.example button:hover {
-  background: #0b7dda;
-}
 
-form.example::after {
-  content: "";
-  clear: both;
-  display: table;
+#su:hover {
+  background-color: #0d6efd;
 }
 </style>
-	</head>
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
+
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center">
+        <img src="assets/img/logo.png" alt="">
+        <span class="d-none d-lg-block">Online Seed Basket</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
+
+    <div class="search-bar">
+      <form class="search-form d-flex align-items-center" method="POST" action="#">
+        <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+        <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+      </form>
+    </div><!-- End Search Bar -->
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon search-bar-toggle " href="#">
+            <i class="bi bi-search"></i>
+          </a>
+        </li><!-- End Search Icon-->
 
 
-	<body>
-	
-		<div id="mySidenav" class="sidenav">
-    <center style="color:BLACK;padding:1px;font-size:20px;""><h2>Online Seed Basket</h2></center>
-      <center style="color:BLACK;padding:1px;font-size:20px;""><h3>Admin Panel</h3></center>
-		<br>   
-	   
-	  <a href="admincat.php"style="color:BLACK;"class="icon-a"><i class="fa fa-shopping-bag icons"></i>Category</a>
-	  <a href="adminsubcat.php"style="color:BLACK;"class="icon-a"><i class="fa fa-shopping-bag icons"></i>   Sub Category</a>
-	  <a href="#"class="icon-a"style="color:BLACK;"><i class="fa fa-list-alt icons"></i>   Manage Sellers</a>
-    <a href="approve.php" class="icon-a"style="color:black;"><i class="fa fa-dashboard icons"></i>   Pending requests</a>
-	 
-	</div>
-		
-	<header class="site-header">
-            <div  class="site-identity">
-             
-               
-            </div>
-        
-            <nav class="site-navigation">
-                <div class="w3-container">
-                    <div class="w3-dropdown-hover">
-                      <button class="w3-button w3-black">WELCOME SELLER</button>
-                      <div class="w3-dropdown-content w3-bar-block w3-border">
-                        <a href="page.php" class="w3-bar-item w3-button">Change Password</a>
-                        <a href="logout.php" class="w3-bar-item w3-button">Logout</a>
-                      </div>
-                    </div>
-                  </div>
-            </nav>
-    </header>
-  <center>
+        <li class="nav-item dropdown pe-3">
+
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <img src="assets/img/profile-img.png" alt="Profile" class="rounded-circle">
+            <span class="d-none d-md-block dropdown-toggle ps-2">
+            <?php
+if(isset($_SESSION['username'])){
+    echo $_SESSION['username'];
+} 
+?>
+            </span>
+          </a><!-- End Profile Iamge Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            <li class="dropdown-header">
+            <?php $query=mysqli_query($conn,"select full_name,job from admin");
+
+while($row=mysqli_fetch_array($query))
+{
+?>	
+              <h6><?php echo htmlentities($row['full_name']);?></h6>
+              <span><?php echo htmlentities($row['job']);?></span>
+              <?php  } ?>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+           
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="logout.php">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+    <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="index.php">
+          <i class="bi bi-menu-button-wide"></i><span>Category</span>
+        </a>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        </ul>
+      </li><!-- End Components Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
+          <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
+        </a>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        </ul>
+      </li><!-- End Components Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageseller.php">
+          <i class="bi bi-journal-text"></i><span>Seller details</span>
+        </a>
+       
+      </li><!-- End Forms Nav -->
+      
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageuser.php">
+          <i class="bi bi-journal-text"></i><span>User details</span>
+        </a>
+       
+      </li><!-- End Forms Nav -->
+
+     
+      <li class="nav-item">
+        <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="approve.php">
   
-  <?php
+          <i class="bi bi-bell"></i><span>Pending requests</span>
+                           
+  <span class="badge bg-primary badge-number">
+  <?php      
+
+// retrieve the count of pending requests
+$sql = "SELECT COUNT(*) AS count FROM sellerreg WHERE status = '1'";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+$count = $row['count'];
+
+// display the notification badge
+if ($count > 0) {
+  echo "$count";}
+  else{
+    echo "no new notification";
+  }
+  ?>
+
+  </span>
+
+</a><!-- End Notification Icon -->
+
+        
+      </li><!-- End Tables Nav -->
+
+       
+      <li class="nav-item">
+        <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="message.php">
+  
+        <i class="bi bi-envelope-fill"></i><span>New Message</span>                          
+  <span class="badge bg-primary badge-number">
+  <?php      
+
+// retrieve the count of pending requests
+$sql = "SELECT COUNT(*) AS count FROM tbl_requests where status='Pending'";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+$count = $row['count'];
+
+// display the notification badge
+if ($count > 0) {
+echo "$count";}
+else{
+  echo "no new notification";
+}
+?>
+
+  </span>
+
+</a><!-- End Notification Icon -->
+
+        
+      </li><!-- End Tables Nav -->
+
+      <li class="nav-heading">Pages</li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="admin-profile.php">
+          <i class="bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li><!-- End Profile Page Nav -->
+
+
+    </ul>
+
+  </aside><!-- End Sidebar-->
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Edit Subcategory</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+          <li class="breadcrumb-item active">Edit subcategory</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section dashboard">
+      <div class="row">
+
+                
+                </div>
+
+              </div>
+            </div><!-- End Reports -->
+
+            <!-- Recent Sales -->
+            <div class="col-12">
+              <div class="card recent-sales overflow-auto">
+
+                <div class="card-body">
+                  <h5 class="card-title">Edit subcategory</h5>
+<br>
+                  
+                  <center>
+                  <?php
   if(isset($_GET['subid']))
   {
     $subid=$_GET['subid'];
-  $query2=mysqli_query($conn,"select *from  tbl_subcategory where subid='$subid' and status=1");
+  $query2=mysqli_query($conn,"select *from  tbl_subcategory where subid='$subid'");
   $num1=mysqli_num_rows($query2);
   if($num1>0)
   {
    while($row=mysqli_fetch_array($query2))
 {
 ?>
+ 
       <div class="cardStyle">
-		  <form id="subcategory" method="POST" action="edit-subcategory.php"> 
-  
-			<h2 class="formTitle">
-			  Edit Subcategory
-			</h2>
-      <input type="hidden"name="sub_id"value="<?= $row['subid'] ?>">
+      <form id="subcategory" method="POST" action="edit-subcategory.php"> 
+      <input type="hidden"name="subid"value="<?= $row['subid'] ?>">
       <div class="inputDiv">
-			<label class="inputLabel" for="subcate"style="font-size:16px;">Edit SubCategory Name</label>
-			<input type="text"name="subcate" id="subcate"value="<?= $row['subcategory'] ?>" required>
+      <b><label class="inputLabel" for="subcate"style="font-size:17px;">Enter SubCategory Name</label></b><br><br>
+      <input type="text" name="subcat" style="width: 320px; height: 70px; font-size: 16px; text-align: center; text-transform: capitalize;" size="28" id="subcate" value="<?= mb_convert_case(iconv(mb_detect_encoding($row['subcategory']), 'UTF-8', $row['subcategory']), MB_CASE_TITLE_SIMPLE, "UTF-8") ?>"  oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();" pattern="[A-Za-z ]{4,}" title="Please enter only letters"required>
+
 		  </div>
-      
+          <br><br>
 		  <div class="buttonWrapper">
 			<button type="submit" id="su"name="su">
-			  <span style="color:black;font-weight:bold;">UPDATE SUBCATEGORY</span>
+			  <span style="color:white">UPDATE SUBCATEGORY</span>
 			</button>
 		  </div>
-		</form>
+      </form>
 </div>
 
 <?php }}
 else{?>
-<marquee direction="right"behaviour="slide"scrollamount='28'><center><BR><BR><BR><BR><BR><BR><h3 style="font-size:50px;color:blue;">This subcategory is not available for now !!!</h3></center></marquee>
+<center><BR><BR><BR><BR><BR><BR><h3 style="font-size:50px;color:blue;">This subcategory is not available for now !!!</h3></center>
 <?php }}?>
 </center>
-<script>
+
+                </div>
+
+
+              </div>
+            </div><!-- End Recent Sales -->
+
+
+      
+         
+         
+
+        </div><!-- End Right side columns -->
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <script>
   <?php
    /**********************index.php**/
-   if(isset($_SESSION['up']))
+   if(isset($_SESSION['msga']))
      { 
 	?>
 	  alertify.set('notifier','position', 'top-center');
-     alertify.success('<?= $_SESSION['up'];?>');
+     alertify.success('<?= $_SESSION['msga'];?>');
    	   <?php
-	  unset($_SESSION['up']);
+	  unset($_SESSION['msga']);
       //if user refresh index.php after 1st time it will not see the message
       }
       ?>
 	  </script>
-</body>
-</html>
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="assets/vendor/echarts/echarts.min.js"></script>
+  <script src="assets/vendor/quill/quill.min.js"></script>
+  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+  

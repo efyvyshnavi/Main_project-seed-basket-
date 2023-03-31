@@ -1,33 +1,42 @@
 <?php
 session_start();
 include ('config.php');
-date_default_timezone_set('Asia/Kolkata');// change according timezone
-$currentTime = date( 'd-m-Y h:i:s A', time () );
-
 if (!isset($_SESSION['username'])) {
   header("Location: admin-login.php");
   exit();
 }
 
-if(isset($_POST['submit']))
+if(isset($_POST['submit1']))
 {
-    $id=$_POST['cat_id'];
-	$category=$_POST['category'];
-	$description=$_POST['description'];
-	
-  
-	
-$query="UPDATE tbl_category SET categoryName='$category',categoryDescription='$description',updationDate='$currentTime' where catid='$id'";
-$query_run=mysqli_query($conn,$query);
-if($query_run)
-{
-	$_SESSION['status'] = "Category updated successfully";
-	header('location:index.php');
-}
-else
-{
-	echo "no";
-}
+    $subcat=$_POST['subcategory'];
+    $category=$_POST['category'];
+
+    // Remove 's' at the end of subcategory name if it exists
+    if (substr($subcat, -1) === 's') {
+        $subcat = substr($subcat, 0, -1);
+    }
+
+    // Validate subcategory name for spaces and special characters
+    if (!preg_match("/^[a-zA-Z0-9]+[a-zA-Z0-9\s]*$/", $subcat)) {
+        $_SESSION['status'] = "Subcategory name should only contain letters, numbers, and spaces, and should not start with a space";
+    }
+    else {
+        $sql="select * from tbl_subcategory where (subcategory='$subcat');";
+
+        $res=mysqli_query($conn,$sql);
+
+        if (mysqli_num_rows($res) > 0) {
+            $row = mysqli_fetch_assoc($res);
+            if($subcat==isset($row['subcategory']))
+            {
+                $_SESSION['status'] = "This subcategory already exists";
+            }
+        }
+        else{
+            $sql=mysqli_query($conn,"insert into tbl_subcategory(categoryid,subcategory,status) values('$category','$subcat','1')");
+            $_SESSION['substatus'] = "Subcategory added successfully";
+        }
+    }
 }
 
 ?>
@@ -65,8 +74,8 @@ else
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
   <style>
-    #submit {
-  background-color:#0d6efd;
+    #submit1 {
+  background-color: #0d6efd;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -75,9 +84,35 @@ else
   cursor: pointer;
 }
 
-#submit:hover {
+#submit1:hover {
   background-color: #D3D3D3;
 }
+
+</style>
+
+<style>
+  .custom-select {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+.custom-select option {
+  font-size: 16px;
+  font-weight: normal;
+  background-color: #fff;
+  color: #333;
+}
+
 </style>
 
   <!-- =======================================================
@@ -116,6 +151,8 @@ else
             <i class="bi bi-search"></i>
           </a>
         </li><!-- End Search Icon-->
+
+        
 
         <li class="nav-item dropdown pe-3">
 
@@ -186,8 +223,9 @@ while($row=mysqli_fetch_array($query))
         </ul>
       </li><!-- End Components Nav -->
 
+
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav"href="subcategory.php">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
           <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
@@ -195,11 +233,12 @@ while($row=mysqli_fetch_array($query))
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav"href="manageseller.php">
           <i class="bi bi-journal-text"></i><span>Seller details</span>
         </a>
        
       </li><!-- End Forms Nav -->
+
       
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageuser.php">
@@ -229,7 +268,6 @@ if ($count > 0) {
     echo "no new notification";
   }
   ?>
-
   </span>
 
 </a><!-- End Notification Icon -->
@@ -265,7 +303,6 @@ else{
 
         
       </li><!-- End Tables Nav -->
-     
 
       <li class="nav-heading">Pages</li>
 
@@ -276,6 +313,7 @@ else{
         </a>
       </li><!-- End Profile Page Nav -->
 
+
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -283,11 +321,11 @@ else{
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Edit Category</h1>
+      <h1>Add Subcategory</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-          <li class="breadcrumb-item active">Edit category</li>
+          <li class="breadcrumb-item active">Add Subcategory</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -306,48 +344,45 @@ else{
               <div class="card recent-sales overflow-auto">
 
                 <div class="card-body">
-                  <h5 class="card-title">Edit category</h5>
+                  <h5 class="card-title">Add new subcategory</h5><br><br>
 
-                  
                   <center>
-<?php
-$id=$_GET['catid'];
-$query=mysqli_query($conn,"select * from tbl_category where catid='$id'and status=1");
-$num2=mysqli_num_rows($query);
-  if($num2>0)
-  {
-   while($row=mysqli_fetch_array($query))
-{
-?>
-	<div class="cardStyle">
-		  <form id="category" method="POST"action="edit-category.php"> 		
-			<input type="hidden"name="cat_id"value="<?= $row['catid'] ?>">
-		  <div class="inputDiv">
-			&nbsp&nbsp&nbsp<b><label class="inputLabel"style="font-size:17px;" for="cat">Edit Category Name</label></b><br><br>
-			<input type="text"rows="2" size="48"name="category"style="width: 300px;height: 60px;font-size:16px;"id="category"value="<?= $row['categoryName'] ?>" required>
+                  <form id="category-form" method="POST" action="subcategory.php">
+                  <div class="inputDiv">
+			      <b><label class="inputLabel"style="font-size:17px;" for="cat"> Category</label><br><br>
+            <select  class="custom-select"  name="category" required style="text-align:center;height: 55px; background-color: #fff; color: #000; font-size: 18px; border: 2px solid #ccc; border-radius: 5px; padding: 5px;">
+            <option value="">---Select from the list available---</option>
+            <?php $query=mysqli_query($conn,"select * from tbl_category where status=1");
+            while($row=mysqli_fetch_array($query))
+            {
+				?>
+				echo $cat=$result['categoryName'];
+            if($catname==$cat)
+            {
+                continue;
+            }
+            else{
+
+            <option value="<?php echo $row['catid'];?>"><?php echo $row['categoryName'];?></option>
+            <?php } ?>
+            </select>
 		  </div>
 		  <br><br>
 		  <div class="inputDiv">
-	     <b><label class="inputLabel" style="font-size:17px;"for="text"> Edit Descripton</label></b><br><br>
-      
-    &nbsp&nbsp
-           
-	  <textarea class="span8" id="description"style="font-size:16px;"name="description"rows="4" cols="50" ><?= $row['categoryDescription'] ?></textarea>
-	  </div>
-      <br><br><br>
-		  
+			<label class="inputLabel"style="font-size:17px;" for="cat">Enter SubCategory Name</label><br><br>
+      <input type="text" name="subcategory" style="width: 330px; height: 80px; font-size: 16px; text-align: center; text-transform: capitalize;" size="35" id="subcategory" pattern="[a-zA-Z ]{4,}" required oninput="this.setCustomValidity(''); if(this.value.length < 4){this.setCustomValidity('Please enter at least 4 letters.');} else if(!/^[a-zA-Z ]*$/.test(this.value)){this.setCustomValidity('Please enter only letters');}"required>
+		  </div>
+	  
+		  <br><br>
 		  <div class="buttonWrapper">
-			<button type="submit" id="submit"name="submit">
-			  <span style="color:white;">Update Category</span>
+			<button type="submit" id="submit1"name="submit1">
+			<span style="color:white">CREATE SUBCATEGORY</span>
 			</button>
 		  </div>	
 		</form>
-		<?php }}
-else{?>
-<center><BR><BR><BR><BR><BR><BR><h5 style="font-size:50px;color:blue;">This category is not available for now !!!</h5></center>
-<?php }?>
+</div>
 
-</center>
+    </center>
 
                 </div>
 

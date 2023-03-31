@@ -8,5 +8,5 @@ if(mysqli_query($conn,$sql6))
 {
     $_SESSION['msg6'] = "Subcategory deactivated successfully";
 }
-header("Location: adminsubcat.php");
+header("Location: subcategory.php");
 ?>

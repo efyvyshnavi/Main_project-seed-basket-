@@ -6,7 +6,7 @@ $id=$_REQUEST['id'];
 $sql3="UPDATE tbl_category set status='0' where catid='$id'";
 if(mysqli_query($conn,$sql3))
 {
-    $_SESSION['msg'] = "Category deactivated successfully";
+    $_SESSION['msg3'] = "Category deactivated successfully";
 }
-header("Location: admincat.php");
+header("Location: index.php");
 ?>

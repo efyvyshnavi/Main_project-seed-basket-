@@ -8,5 +8,5 @@ if(mysqli_query($conn,$sql5))
 {
     $_SESSION['msg5'] =  "Subcategory activated successfully";
 }
-header("Location: adminsubcat.php");
+header("Location: subcategory.php");
 ?>

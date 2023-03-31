@@ -1,564 +1,482 @@
 <?php
 session_start();
-error_reporting(0);
-include('includes/config.php');
-if(isset($_GET['action']) && $_GET['action']=="add"){
-	$id=intval($_GET['id']);
-	if(isset($_SESSION['cart'][$id])){
-		$_SESSION['cart'][$id]['quantity']++;
-	}else{
-		$sql_p="SELECT * FROM products WHERE id={$id}";
-		$query_p=mysqli_query($con,$sql_p);
-		if(mysqli_num_rows($query_p)!=0){
-			$row_p=mysqli_fetch_array($query_p);
-			$_SESSION['cart'][$row_p['id']]=array("quantity" => 1, "price" => $row_p['productPrice']);
-		
-		}else{
-			$message="Product ID is invalid";
-		}
-	}
-		echo "<script>alert('Product has been added to the cart')</script>";
-		echo "<script type='text/javascript'> document.location ='my-cart.php'; </script>";
+include ('config.php');
+date_default_timezone_set('Asia/Kolkata');// 
+$currentTime = date( 'd-m-Y h:i:s A', time () );
+
+// Check if the user is logged in
+if (!isset($_SESSION['username'])) {
+    header("Location: admin-login.php");
+    exit();
 }
 
+if (isset($_POST['csubmit'])) {
+  $category = trim($_POST['category']);
+  $description = trim($_POST['description']);
 
+  // Validate the category name
+  if (empty($category)) {
+      // The category name is empty or null
+      $_SESSION['status'] = "Please enter a category name";
+  } else if (strlen($category) > 50) {
+      // The category name is too long
+      $_SESSION['status'] = "Category name is too long";
+  } else if (preg_match('/[^A-Za-z0-9\s]/', $category)) {
+      // The category name contains invalid characters
+      $_SESSION['status'] = "Category name contains invalid characters";
+  } else if (substr($category, -1) == "s") {
+    // Remove the "s" to obtain the singular form of the category name
+    $singularCategory = substr($category, 0, -1);
+    $sql = "SELECT * FROM tbl_category WHERE categoryName = '$singularCategory'";
+    $result = mysqli_query($conn, $sql);
+    if (mysqli_num_rows($result) > 0) {
+      $_SESSION['status'] = "This category already exists";
+    } else {
+      // Insert the new category into the database
+      $sql = "INSERT INTO tbl_category (categoryName, categoryDescription, status) VALUES ('$category', '$description', '1')";
+      mysqli_query($conn, $sql);
+      $_SESSION['status'] = "Category added successfully";
+    }
+  } else if (empty($description)) {
+    // The description is empty or null
+    $_SESSION['status'] = "Please enter a description";
+  } else if (strlen($description) > 255) {
+    // The description is too long
+    $_SESSION['status'] = "Description is too long";
+  } else if (preg_match('/[^A-Za-z0-9\s]/', $description)) {
+    // The description contains invalid characters
+    $_SESSION['status'] = "Description contains invalid characters";
+  } else {
+    // Check if the category already exists in the database
+    $sql = "SELECT * FROM tbl_category WHERE categoryName = '$category'";
+    $result = mysqli_query($conn, $sql);
+    if (mysqli_num_rows($result) > 0) {
+      $_SESSION['status'] = "This category already exists";
+    } else {
+      // Insert the new category into the database
+      $sql = "INSERT INTO tbl_category (categoryName, categoryDescription, status) VALUES ('$category', '$description', '1')";
+      mysqli_query($conn, $sql);
+      $_SESSION['status'] = "Category added successfully";
+    }
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<!-- Meta -->
-		<meta charset="utf-8">
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<meta name="description" content="">
-		<meta name="author" content="">
-	    <meta name="keywords" content="MediaCenter, Template, eCommerce">
-	    <meta name="robots" content="all">
 
-	    <title>Shopping Portal Home Page</title>
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-	    <!-- Bootstrap Core CSS -->
-	    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-	    
-	    <!-- Customizable CSS -->
-	    <link rel="stylesheet" href="assets/css/main.css">
-	    <link rel="stylesheet" href="assets/css/green.css">
-	    <link rel="stylesheet" href="assets/css/owl.carousel.css">
-		<link rel="stylesheet" href="assets/css/owl.transitions.css">
-		<!--<link rel="stylesheet" href="assets/css/owl.theme.css">-->
-		<link href="assets/css/lightbox.css" rel="stylesheet">
-		<link rel="stylesheet" href="assets/css/animate.min.css">
-		<link rel="stylesheet" href="assets/css/rateit.css">
-		<link rel="stylesheet" href="assets/css/bootstrap-select.min.css">
+  <title>Admin-Online Seed Basket</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
 
-		<!-- Demo Purpose Only. Should be removed in production -->
-		<link rel="stylesheet" href="assets/css/config.css">
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
-		<link href="assets/css/green.css" rel="alternate stylesheet" title="Green color">
-		<link href="assets/css/blue.css" rel="alternate stylesheet" title="Blue color">
-		<link href="assets/css/red.css" rel="alternate stylesheet" title="Red color">
-		<link href="assets/css/orange.css" rel="alternate stylesheet" title="Orange color">
-		<link href="assets/css/dark-green.css" rel="alternate stylesheet" title="Darkgreen color">
-		<link rel="stylesheet" href="assets/css/font-awesome.min.css">
-		<link href='http://fonts.googleapis.com/css?family=Roboto:300,400,500,700' rel='stylesheet' type='text/css'>
-		
-		<!-- Favicon -->
-		<link rel="shortcut icon" href="assets/images/favicon.ico">
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
+		<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+		<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
+		<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+    
+    <style>
+  .edit-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 
-	</head>
-    <body class="cnt-home">
-	
-		
-	
-		<!-- ============================================== HEADER ============================================== -->
-<header class="header-style-1">
-<?php include('includes/top-header.php');?>
-<?php include('includes/main-header.php');?>
-<?php include('includes/menu-bar.php');?>
-</header>
+.edit-btn:hover {
+  background-color: #0062cc;
+}
+.edit-btn {
+  font-size: 15px; /* change the font size */
+  padding: 8px 12px; /* change the padding */
+}
+.edit-btn {
+  height: 31px;
+  width: 78px;
+  text-align: center;
+}
+</style>
 
-<!-- ============================================== HEADER : END ============================================== -->
-<div class="body-content outer-top-xs" id="top-banner-and-menu">
-	<div class="container">
-		<div class="furniture-container homepage-container">
-		<div class="row">
-		
-			<div class="col-xs-12 col-sm-12 col-md-3 sidebar">
-				<!-- ================================== TOP NAVIGATION ================================== -->
-	<?php include('includes/side-menu.php');?>
-<!-- ================================== TOP NAVIGATION : END ================================== -->
-			</div><!-- /.sidemenu-holder -->	
-			
-			<div class="col-xs-12 col-sm-12 col-md-9 homebanner-holder">
-				<!-- ========================================== SECTION – HERO ========================================= -->
-			
-<div id="hero" class="homepage-slider3">
-	<div id="owl-main" class="owl-carousel owl-inner-nav owl-ui-sm">
-		<div class="full-width-slider">	
-			<div class="item" style="background-image: url(assets/images/sliders/slider1.png);">
-				<!-- /.container-fluid -->
-			</div><!-- /.item -->
-		</div><!-- /.full-width-slider -->
-	    
-	    <div class="full-width-slider">
-			<div class="item full-width-slider" style="background-image: url(assets/images/sliders/slider2.png);">
-			</div><!-- /.item -->
-		</div><!-- /.full-width-slider -->
+ 
+</head>
 
-	</div><!-- /.owl-carousel -->
-</div>
-			
-<!-- ========================================= SECTION – HERO : END ========================================= -->	
-				<!-- ============================================== INFO BOXES ============================================== -->
-<div class="info-boxes wow fadeInUp">
-	<div class="info-boxes-inner">
-		<div class="row">
-			<div class="col-md-6 col-sm-4 col-lg-4">
-				<div class="info-box">
-					<div class="row">
-						<div class="col-xs-2">
-						     <i class="icon fa fa-dollar"></i>
-						</div>
-						<div class="col-xs-10">
-							<h4 class="info-box-heading green">money back</h4>
-						</div>
-					</div>	
-					<h6 class="text">30 Day Money Back Guarantee.</h6>
-				</div>
-			</div><!-- .col -->
+<body>
 
-			<div class="hidden-md col-sm-4 col-lg-4">
-				<div class="info-box">
-					<div class="row">
-						<div class="col-xs-2">
-							<i class="icon fa fa-truck"></i>
-						</div>
-						<div class="col-xs-10">
-							<h4 class="info-box-heading orange">free shipping</h4>
-						</div>
-					</div>
-					<h6 class="text">free ship-on oder over Rs. 600.00</h6>	
-				</div>
-			</div><!-- .col -->
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
 
-			<div class="col-md-6 col-sm-4 col-lg-4">
-				<div class="info-box">
-					<div class="row">
-						<div class="col-xs-2">
-							<i class="icon fa fa-gift"></i>
-						</div>
-						<div class="col-xs-10">
-							<h4 class="info-box-heading red">Special Sale</h4>
-						</div>
-					</div>
-					<h6 class="text">All items-sale up to 20% off </h6>	
-				</div>
-			</div><!-- .col -->
-		</div><!-- /.row -->
-	</div><!-- /.info-boxes-inner -->
-	
-</div><!-- /.info-boxes -->
-<!-- ============================================== INFO BOXES : END ============================================== -->		
-			</div><!-- /.homebanner-holder -->
-			
-		</div><!-- /.row -->
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center">
+        <img src="assets/img/logo.png" alt="">
+        <span class="d-none d-lg-block">Online Seed Basket</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
 
-		<!-- ============================================== SCROLL TABS ============================================== -->
-		<div id="product-tabs-slider" class="scroll-tabs inner-bottom-vs  wow fadeInUp">
-			<div class="more-info-tab clearfix">
-			   <h3 class="new-product-title pull-left">Featured Products</h3>
-				<ul class="nav nav-tabs nav-tab-line pull-right" id="new-products-1">
-					<li class="active"><a href="#all" data-toggle="tab">All</a></li>
-					<li><a href="#books" data-toggle="tab">Books</a></li>
-					<li><a href="#furniture" data-toggle="tab">Furniture</a></li>
-				</ul><!-- /.nav-tabs -->
-			</div>
+    <div class="search-bar">
+      <form class="search-form d-flex align-items-center" method="POST" action="#">
+        <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+        <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+      </form>
+    </div><!-- End Search Bar -->
 
-			<div class="tab-content outer-top-xs">
-				<div class="tab-pane in active" id="all">			
-					<div class="product-slider">
-						<div class="owl-carousel home-owl-carousel custom-carousel owl-theme" data-item="4">
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon search-bar-toggle " href="#">
+            <i class="bi bi-search"></i>
+          </a>
+        </li><!-- End Search Icon-->
+
+             
+
+        <li class="nav-item dropdown pe-3">
+
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+            <img src="assets/img/profile-img.png" alt="Profile" class="rounded-circle">
+            <span class="d-none d-md-block dropdown-toggle ps-2">
+            <?php
+if(isset($_SESSION['username'])){
+    echo $_SESSION['username'];
+} 
+?>
+            </span>
+            
+          </a><!-- End Profile Iamge Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            <li class="dropdown-header">
+            <?php $query=mysqli_query($conn,"select full_name,job from admin");
+
+while($row=mysqli_fetch_array($query))
+{
+?>	
+              <h6><?php echo htmlentities($row['full_name']);?></h6>
+              <span><?php echo htmlentities($row['job']);?></span>
+              <?php  } ?>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="admin-profile.php">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+          
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="logout.php">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+    <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="index.php">
+          <i class="bi bi-menu-button-wide"></i><span>Category</span>
+        </a>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        </ul>
+      </li><!-- End Components Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
+          <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
+        </a>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        </ul>
+      </li><!-- End Components Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageseller.php">
+          <i class="bi bi-journal-text"></i><span>Seller details</span>
+        </a>
+       
+      </li><!-- End Forms Nav -->
+      
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageuser.php">
+          <i class="bi bi-journal-text"></i><span>User details</span>
+        </a>
+       
+      </li><!-- End Forms Nav -->
+
+     
+      <li class="nav-item">
+        <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="approve.php">
+  
+          <i class="bi bi-bell"></i><span>Pending requests</span>
+                           
+  <span class="badge bg-primary badge-number">
+  <?php      
+
+// retrieve the count of pending requests
+$sql = "SELECT COUNT(*) AS count FROM sellerreg WHERE status = '1'";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+$count = $row['count'];
+
+// display the notification badge
+if ($count > 0) {
+  echo "$count";}
+  else{
+    echo "no new notification";
+  }
+  ?>
+
+  </span>
+
+</a><!-- End Notification Icon -->
+
+        
+      </li><!-- End Tables Nav -->
+
+      
+      
+      <li class="nav-item">
+        <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="message.php">
+  
+        <i class="bi bi-envelope-fill"></i><span>New Message</span>                          
+  <span class="badge bg-primary badge-number">
+  <?php      
+
+// retrieve the count of pending requests
+$sql = "SELECT COUNT(*) AS count FROM tbl_requests where status='Pending'";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+$count = $row['count'];
+
+// display the notification badge
+if ($count > 0) {
+echo "$count";}
+else{
+  echo "no new notification";
+}
+?>
+
+  </span>
+
+</a><!-- End Notification Icon -->
+
+        
+      </li><!-- End Tables Nav -->
+
+      
+      <li class="nav-heading">Pages</li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="admin-profile.php">
+          <i class="bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      </li><!-- End Profile Page Nav -->
+
+
+    </ul>
+
+  </aside><!-- End Sidebar-->
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Dashboard</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+          <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section dashboard">
+      <div class="row">
+
+                
+                </div>
+
+              </div>
+            </div><!-- End Reports -->
+
+            <!-- Recent Sales -->
+            <div class="col-12">
+              <div class="card recent-sales overflow-auto">
+                <div class="card-body">
+                <div class="filter">
+                 <B><div style = "position:relative; left:-23px; top:2px;"><a href="add-category.php">Click to add new category</a></div></B>
+              
+            </div>
+
+                  <h5 class="card-title">Category</h5>
+
+                  <table class="table table-borderless datatable">
+                    <thead>
+                      <tr>
+                        <th scope="col">Sl.No</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Created on</th>
+                        <th scope="col">Last updated</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Edit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                                       
+<?php $query=mysqli_query($conn,"select * from tbl_category");
+$cnt=1;
+while($row=mysqli_fetch_array($query))
+{
+?>									
+	        								
+                <tr>
+					  <td><?php echo htmlentities($cnt);?></td>
+					  <td><?php echo htmlentities($row['categoryName']);?></td>
+					  <td><?php echo htmlentities($row['categoryDescription']);?></td>
+					  <td> <?php echo htmlentities($row['creationDate']);?></td>
+					  <td><?php echo htmlentities($row['updationDate']);?></td>
+            <td>
+              <?php if($row['status']==1){ ?>
+                <form action="inactivate.php" method="post">
+                  <input type="hidden" name="id" value="<?php echo $row['catid']; ?>">
+                  <input type="hidden" name="status" value="0">
+                  <button type="submit" class="btn btn-danger btn-sm">Disable</button>
+                </form>
+              <?php } else { ?>
+                <form action="activate.php" method="post">
+                  <input type="hidden" name="id" value="<?php echo $row['catid']; ?>">
+                  <input type="hidden" name="status" value="1">
+                  <button type="submit" class="btn btn-success btn-sm">Enable</button>
+                </form>
+              <?php } ?>
+            </td>
+
+            <td>
+            <form action="edit-category.php" method="get">
+              <input type="hidden" name="catid" value="<?php echo $row['catid']; ?>">
+              <button type="submit" class="edit-btn">Edit</button>
+            </form>
+          </td>
+
+				
+				</tr>
+				<?php $cnt=$cnt+1; } ?>
+                      
+                    </tbody>
+                  </table>
+
+                </div>
+
+              </div>
+            </div><!-- End Recent Sales -->
+
+
+      
+         
+         
+
+        </div><!-- End Right side columns -->
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="assets/vendor/echarts/echarts.min.js"></script>
+  <script src="assets/vendor/quill/quill.min.js"></script>
+  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+  
+<script>
 <?php
-$ret=mysqli_query($con,"select * from products");
-while ($row=mysqli_fetch_array($ret)) 
-{
-	# code...
+  if(isset($_SESSION['status']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+      alertify.success('<?= $_SESSION['status'];?>');
+   	   <?php
+	  unset($_SESSION['status']);
+      }
+      ?>
+</script>
+	  
+<script>
+  <?php
+   if(isset($_SESSION['msg3']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+       alertify.success('<?= $_SESSION['msg3'];?>');
+   	   <?php
+	   unset($_SESSION['msg3']);
+      }
+      ?>
+</script>
 
-
-?>
-
-						    	
-		<div class="item item-carousel">
-			<div class="products">
-				
-	<div class="product">		
-		<div class="product-image">
-			<div class="image">
-				<a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>">
-				<img  src="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" data-echo="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>"  width="180" height="300" alt=""></a>
-			</div><!-- /.image -->			
-
-			                        		   
-		</div><!-- /.product-image -->
-			
-		
-		<div class="product-info text-left">
-			<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><?php echo htmlentities($row['productName']);?></a></h3>
-			<div class="rating rateit-small"></div>
-			<div class="description"></div>
-
-			<div class="product-price">	
-				<span class="price">
-					Rs.<?php echo htmlentities($row['productPrice']);?>			</span>
-										     <span class="price-before-discount">Rs.<?php echo htmlentities($row['productPriceBeforeDiscount']);?>	</span>
-									
-			</div><!-- /.product-price -->
-			
-		</div><!-- /.product-info -->
-		<?php if($row['productAvailability']=='In Stock'){?>
-					<div class="action"><a href="index.php?page=product&action=add&id=<?php echo $row['id']; ?>" class="lnk btn btn-primary">Add to Cart</a></div>
-				<?php } else {?>
-						<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
-			</div><!-- /.product -->
-      
-			</div><!-- /.products -->
-		</div><!-- /.item -->
-	<?php } ?>
-
-			</div><!-- /.home-owl-carousel -->
-					</div><!-- /.product-slider -->
-				</div>
-
-
-
-
-	<div class="tab-pane" id="books">
-					<div class="product-slider">
-						<div class="owl-carousel home-owl-carousel custom-carousel owl-theme">
-		<?php
-$ret=mysqli_query($con,"select * from products where category=3");
-while ($row=mysqli_fetch_array($ret)) 
-{
-	# code...
-
-
-?>
-
-						    	
-		<div class="item item-carousel">
-			<div class="products">
-				
-	<div class="product">		
-		<div class="product-image">
-			<div class="image">
-				<a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>">
-				<img  src="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" data-echo="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>"  width="180" height="300" alt=""></a>
-			</div><!-- /.image -->			
-
-			                        		   
-		</div><!-- /.product-image -->
-			
-		
-		<div class="product-info text-left">
-			<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><?php echo htmlentities($row['productName']);?></a></h3>
-			<div class="rating rateit-small"></div>
-			<div class="description"></div>
-
-			<div class="product-price">	
-				<span class="price">
-					Rs. <?php echo htmlentities($row['productPrice']);?>			</span>
-										     <span class="price-before-discount">Rs.<?php echo htmlentities($row['productPriceBeforeDiscount']);?></span>
-									
-			</div><!-- /.product-price -->
-			
-		</div><!-- /.product-info -->
-				<?php if($row['productAvailability']=='In Stock'){?>
-					<div class="action"><a href="index.php?page=product&action=add&id=<?php echo $row['id']; ?>" class="lnk btn btn-primary">Add to Cart</a></div>
-				<?php } else {?>
-						<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
-			</div><!-- /.product -->
-      
-			</div><!-- /.products -->
-		</div><!-- /.item -->
-	<?php } ?>
-	
-		
-								</div><!-- /.home-owl-carousel -->
-					</div><!-- /.product-slider -->
-				</div>
-
-
-
-
-
-
-		<div class="tab-pane" id="furniture">
-					<div class="product-slider">
-						<div class="owl-carousel home-owl-carousel custom-carousel owl-theme">
-		<?php
-$ret=mysqli_query($con,"select * from products where category=5");
-while ($row=mysqli_fetch_array($ret)) 
-{
-?>
-
-						    	
-		<div class="item item-carousel">
-			<div class="products">
-				
-	<div class="product">		
-		<div class="product-image">
-			<div class="image">
-				<a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>">
-				<img  src="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" data-echo="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>"  width="180" height="300" alt=""></a>
-			</div>		
-
-			                        		   
-		</div>
-			
-		
-		<div class="product-info text-left">
-			<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><?php echo htmlentities($row['productName']);?></a></h3>
-			<div class="rating rateit-small"></div>
-			<div class="description"></div>
-
-			<div class="product-price">	
-				<span class="price">
-					Rs.<?php echo htmlentities($row['productPrice']);?>			</span>
-										     <span class="price-before-discount">Rs.<?php echo htmlentities($row['productPriceBeforeDiscount']);?></span>
-									
-			</div>
-			
-		</div>
-				<?php if($row['productAvailability']=='In Stock'){?>
-					<div class="action"><a href="index.php?page=product&action=add&id=<?php echo $row['id']; ?>" class="lnk btn btn-primary">Add to Cart</a></div>
-				<?php } else {?>
-						<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
-			</div>
-      
-			</div>
-		</div>
-	<?php } ?>
-	
-		
-								</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		    
-
-         <!-- ============================================== TABS ============================================== -->
-			<div class="sections prod-slider-small outer-top-small">
-				<div class="row">
-					<div class="col-md-6">
-	                   <section class="section">
-	                   	<h3 class="section-title">Smart Phones</h3>
-	                   	<div class="owl-carousel homepage-owl-carousel custom-carousel outer-top-xs owl-theme" data-item="2">
-	   
-<?php
-$ret=mysqli_query($con,"select * from products where category=4 and subCategory=4");
-while ($row=mysqli_fetch_array($ret)) 
-{
-?>
-
-
-
-		<div class="item item-carousel">
-			<div class="products">
-				
-	<div class="product">		
-		<div class="product-image">
-			<div class="image">
-				<a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><img  src="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" data-echo="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>"  width="180" height="300"></a>
-			</div><!-- /.image -->			                        		   
-		</div><!-- /.product-image -->
-			
-		
-		<div class="product-info text-left">
-			<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><?php echo htmlentities($row['productName']);?></a></h3>
-			<div class="rating rateit-small"></div>
-			<div class="description"></div>
-
-			<div class="product-price">	
-				<span class="price">
-					Rs. <?php echo htmlentities($row['productPrice']);?>			</span>
-										     <span class="price-before-discount">Rs.<?php echo htmlentities($row['productPriceBeforeDiscount']);?></span>
-									
-			</div>
-			
-		</div>
-				<?php if($row['productAvailability']=='In Stock'){?>
-					<div class="action"><a href="index.php?page=product&action=add&id=<?php echo $row['id']; ?>" class="lnk btn btn-primary">Add to Cart</a></div>
-				<?php } else {?>
-						<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
-			</div>
-			</div>
-		</div>
-<?php }?>
-
-	
-			                   	</div>
-	                   </section>
-					</div>
-					<div class="col-md-6">
-						<section class="section">
-							<h3 class="section-title">Laptops</h3>
-		                   	<div class="owl-carousel homepage-owl-carousel custom-carousel outer-top-xs owl-theme" data-item="2">
-	<?php
-$ret=mysqli_query($con,"select * from products where category=4 and subCategory=6");
-while ($row=mysqli_fetch_array($ret)) 
-{
-?>
-
-
-		<div class="item item-carousel">
-			<div class="products">
-				
-	<div class="product">		
-		<div class="product-image">
-			<div class="image">
-				<a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><img  src="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" data-echo="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>"  width="300" height="300"></a>
-			</div><!-- /.image -->			                        		   
-		</div><!-- /.product-image -->
-			
-		
-		<div class="product-info text-left">
-			<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><?php echo htmlentities($row['productName']);?></a></h3>
-			<div class="rating rateit-small"></div>
-			<div class="description"></div>
-
-			<div class="product-price">	
-				<span class="price">
-					Rs .<?php echo htmlentities($row['productPrice']);?>			</span>
-										     <span class="price-before-discount">Rs.<?php echo htmlentities($row['productPriceBeforeDiscount']);?></span>
-									
-			</div>
-			
-		</div>
-				<?php if($row['productAvailability']=='In Stock'){?>
-					<div class="action"><a href="index.php?page=product&action=add&id=<?php echo $row['id']; ?>" class="lnk btn btn-primary">Add to Cart</a></div>
-				<?php } else {?>
-						<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
-			</div>
-			</div>
-		</div>
-<?php }?>
-
-		
-	
-				                   	</div>
-	                   </section>
-
-					</div>
-				</div>
-			</div>
-		<!-- ============================================== TABS : END ============================================== -->
-
-		
-
-	<section class="section featured-product inner-xs wow fadeInUp">
-		<h3 class="section-title">Fashion</h3>
-		<div class="owl-carousel best-seller custom-carousel owl-theme outer-top-xs">
-			<?php
-$ret=mysqli_query($con,"select * from products where category=6");
-while ($row=mysqli_fetch_array($ret)) 
-{
-	# code...
-
-
-?>
-				<div class="item">
-					<div class="products">
-
-
-
-
-												<div class="product">
-							<div class="product-micro">
-								<div class="row product-micro-row">
-									<div class="col col-xs-6">
-										<div class="product-image">
-											<div class="image">
-												<a href="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" data-lightbox="image-1" data-title="<?php echo htmlentities($row['productName']);?>">
-													<img data-echo="admin/productimages/<?php echo htmlentities($row['id']);?>/<?php echo htmlentities($row['productImage1']);?>" width="170" height="174" alt="">
-													<div class="zoom-overlay"></div>
-												</a>					
-											</div><!-- /.image -->
-
-										</div><!-- /.product-image -->
-									</div><!-- /.col -->
-									<div class="col col-xs-6">
-										<div class="product-info">
-											<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($row['id']);?>"><?php echo htmlentities($row['productName']);?></a></h3>
-											<div class="rating rateit-small"></div>
-											<div class="product-price">	
-												<span class="price">
-													Rs. <?php echo htmlentities($row['productPrice']);?>
-												</span>
-
-											</div><!-- /.product-price -->
-										<?php if($row['productAvailability']=='In Stock'){?>
-					<div class="action"><a href="index.php?page=product&action=add&id=<?php echo $row['id']; ?>" class="lnk btn btn-primary">Add to Cart</a></div>
-				<?php } else {?>
-						<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
-										</div>
-									</div><!-- /.col -->
-								</div><!-- /.product-micro-row -->
-							</div><!-- /.product-micro -->
-						</div>
-
-
-											</div>
-				</div><?php } ?>
-							</div>
-		</section>
-<?php include('includes/brands-slider.php');?>
-</div>
-</div>
-<?php include('includes/footer.php');?>
-	
-	<script src="assets/js/jquery-1.11.1.min.js"></script>
-	
-	<script src="assets/js/bootstrap.min.js"></script>
-	
-	<script src="assets/js/bootstrap-hover-dropdown.min.js"></script>
-	<script src="assets/js/owl.carousel.min.js"></script>
-	
-	<script src="assets/js/echo.min.js"></script>
-	<script src="assets/js/jquery.easing-1.3.min.js"></script>
-	<script src="assets/js/bootstrap-slider.min.js"></script>
-    <script src="assets/js/jquery.rateit.min.js"></script>
-    <script type="text/javascript" src="assets/js/lightbox.min.js"></script>
-    <script src="assets/js/bootstrap-select.min.js"></script>
-    <script src="assets/js/wow.min.js"></script>
-	<script src="assets/js/scripts.js"></script>
-
-	<!-- For demo purposes – can be removed on production -->
-	
-	<script src="switchstylesheet/switchstylesheet.js"></script>
-	
-	<script>
-		$(document).ready(function(){ 
-			$(".changecolor").switchstylesheet( { seperator:"color"} );
-			$('.show-theme-options').click(function(){
-				$(this).parent().toggleClass('open');
-				return false;
-			});
-		});
-
-		$(window).bind("load", function() {
-		   $('.show-theme-options').delay(2000).trigger('click');
-		});
-	</script>
-	<!-- For demo purposes – can be removed on production : End -->
-
-	
+<script>
+  <?php
+   if(isset($_SESSION['message']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+       alertify.success('<?= $_SESSION['message'];?>');
+   	   <?php
+	   unset($_SESSION['message']);
+      }
+      ?>
+</script>
 
 </body>
+
 </html>

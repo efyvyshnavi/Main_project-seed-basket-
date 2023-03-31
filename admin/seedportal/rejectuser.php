@@ -1,16 +1,19 @@
 <?php
 session_start();
 include('config.php');
-$id=$_REQUEST['id'];
-$email = $_GET['email'];
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 require 'vendor/autoload.php';
-$sql9=mysqli_query($conn,"UPDATE sellerreg,login SET sellerreg.status='2',login.status='2' where login.logid=sellerreg.logid AND sellerreg.sellerid='$id'");
-if($sql9){
-echo "<script> alert ('Approved and Email send successfully'); window.location='approve.php'</script>";
+$id = $_GET['id'];
+$status = $_GET['status'];
+$email = $_GET['email'];
+
+$sqlq=mysqli_query($conn,"UPDATE userreg SET status='$status' WHERE userid='$id'");
+
+if($sqlq)
+ {
+ echo "<script> alert ('Account Deleted and Email Send Successfully !!! '); window.location='manageuser.php'</script>";
 
  $mail = new PHPMailer(true);
         
@@ -25,17 +28,17 @@ echo "<script> alert ('Approved and Email send successfully'); window.location='
  $mail->Password = 'vyshnavi@123';
 
  // send by h-hotel email
- $mail->setFrom('vyshnavibabus2023b@mca.ajce.in', 'Account activated');
+ $mail->setFrom('vyshnavibabus2023b@mca.ajce.in', 'Account Deleted');
  // get email from input
  $mail->addAddress($email);
  //$mail->addReplyTo('lamkaizhe16@gmail.com');
 
  // HTML body
  $mail->isHTML(true);
- $mail->Subject = "Approved Your Account activation ";
+ $mail->Subject = "Your account in Online Seed Basket is Deleted ";
  $mail->Body = "
-       <h3>Dear seller, your account in Online Seed Basket is activated</h3>
-        You can start using the account in Online Seed Basket for further activities
+       <h3>Dear user, your account in Online Seed Basket is removed</h3>
+        You can start a new account to continue purchasing seeds from Online Seed Basket
        <br><br>
        <p>With regrads,</p>
        <b>Admin , Online Seed Basket</b>";
@@ -44,4 +47,5 @@ echo "<script> alert ('Approved and Email send successfully'); window.location='
    echo "<script> alert ('Email Send UnSuccessfull !!! '); window.location='#'</script>";
 
  } 
-}?> 
+ 
+}

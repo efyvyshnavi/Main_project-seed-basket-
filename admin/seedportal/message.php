@@ -1,37 +1,14 @@
 <?php
 session_start();
 include ('config.php');
-date_default_timezone_set('Asia/Kolkata');// change according timezone
+date_default_timezone_set('Asia/Kolkata');// 
 $currentTime = date( 'd-m-Y h:i:s A', time () );
-
 if (!isset($_SESSION['username'])) {
   header("Location: admin-login.php");
   exit();
 }
 
-if(isset($_POST['submit']))
-{
-    $id=$_POST['cat_id'];
-	$category=$_POST['category'];
-	$description=$_POST['description'];
-	
-  
-	
-$query="UPDATE tbl_category SET categoryName='$category',categoryDescription='$description',updationDate='$currentTime' where catid='$id'";
-$query_run=mysqli_query($conn,$query);
-if($query_run)
-{
-	$_SESSION['status'] = "Category updated successfully";
-	header('location:index.php');
-}
-else
-{
-	echo "no";
-}
-}
-
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -46,7 +23,6 @@ else
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-  
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -65,20 +41,66 @@ else
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
   <style>
-    #submit {
-  background-color:#0d6efd;
-  color: white;
+  .request {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  margin-bottom: 30px;
+}
+.body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.request h5 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 5px;
+}
+
+  .request p {
+    margin: 0;
+  }
+  .request strong {
+    font-weight: bold;
+  }
+</style>
+<style>
+    .request button {
+  margin-top: 10px;
+  margin-right: 5px;
+  padding: 6px 12px;
+  border-radius: 3px;
   border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
-#submit:hover {
-  background-color: #D3D3D3;
+.request button.btn-success {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.request button.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
 }
 </style>
+<style>
+   .accepted {
+    background-color: #c1ffc1;
+}
+.rejected {
+    background-color: #ff9999;
+}
+</style>
+
+
 
   <!-- =======================================================
   * Template Name: NiceAdmin - v2.5.0
@@ -116,6 +138,9 @@ else
             <i class="bi bi-search"></i>
           </a>
         </li><!-- End Search Icon-->
+
+        
+
 
         <li class="nav-item dropdown pe-3">
 
@@ -178,6 +203,7 @@ while($row=mysqli_fetch_array($query))
   <aside id="sidebar" class="sidebar">
 
     <ul class="sidebar-nav" id="sidebar-nav">
+
     <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#components-nav" href="index.php">
           <i class="bi bi-menu-button-wide"></i><span>Category</span>
@@ -187,7 +213,7 @@ while($row=mysqli_fetch_array($query))
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav"href="subcategory.php">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
           <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
@@ -195,7 +221,7 @@ while($row=mysqli_fetch_array($query))
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageseller.php">
           <i class="bi bi-journal-text"></i><span>Seller details</span>
         </a>
        
@@ -207,7 +233,7 @@ while($row=mysqli_fetch_array($query))
         </a>
        
       </li><!-- End Forms Nav -->
-
+      
       <li class="nav-item">
         <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="approve.php">
   
@@ -224,18 +250,16 @@ $count = $row['count'];
 
 // display the notification badge
 if ($count > 0) {
-  echo "$count";}
-  else{
-    echo "no new notification";
-  }
-  ?>
+echo "$count";}
+else{
+  echo "no new notification";
+}
+?>
 
   </span>
 
 </a><!-- End Notification Icon -->
 
-        
-      </li><!-- End Tables Nav -->
 
        
       <li class="nav-item">
@@ -265,6 +289,8 @@ else{
 
         
       </li><!-- End Tables Nav -->
+
+      
      
 
       <li class="nav-heading">Pages</li>
@@ -276,6 +302,9 @@ else{
         </a>
       </li><!-- End Profile Page Nav -->
 
+
+
+
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -283,11 +312,11 @@ else{
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Edit Category</h1>
+      <h1>Requests</h1>
       <nav>
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-          <li class="breadcrumb-item active">Edit category</li>
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item active">Requests</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -304,53 +333,52 @@ else{
             <!-- Recent Sales -->
             <div class="col-12">
               <div class="card recent-sales overflow-auto">
-
                 <div class="card-body">
-                  <h5 class="card-title">Edit category</h5>
+               
+                <h5 class="card-title"></h5>
+                <?php 
+$query = mysqli_query($conn, "SELECT sellerreg.sellerid, sellerreg.fname, sellerreg.phoneno, tbl_requests.request_id, tbl_requests.type, tbl_requests.details, tbl_requests.requesttime, tbl_requests.status FROM tbl_requests JOIN sellerreg ON tbl_requests.sellerid=sellerreg.sellerid");
+$num = mysqli_num_rows($query);
 
-                  
-                  <center>
-<?php
-$id=$_GET['catid'];
-$query=mysqli_query($conn,"select * from tbl_category where catid='$id'and status=1");
-$num2=mysqli_num_rows($query);
-  if($num2>0)
-  {
-   while($row=mysqli_fetch_array($query))
-{
+if ($num > 0) {
+  while ($row = mysqli_fetch_array($query)) {
+    $status = $row['status']; // fetch the status
+    
+    // display the request details and status
+echo "<div class='request'>";
+echo "<h5>Request " . htmlentities($row['request_id']) . "</h5>";
+echo "<p><strong>First Name:</strong> " . htmlentities($row['fname']) . "</p>";
+echo "<p><strong>Phone No:</strong> " . htmlentities($row['phoneno']) . "</p>";
+echo "<p><strong>Type:</strong> " . htmlentities($row['type']) . "</p>";
+echo "<p><strong>Details:</strong> " . htmlentities($row['details']) . "</p>";
+echo "<p><strong>Request Time:</strong> " . htmlentities($row['requesttime']) . "</p>";
+if ($status == 'Accepted') {
+    echo "<p class='accepted'><strong>Status:</strong> " . htmlentities($row['status']) . "</p>";
+} else if ($status == 'Rejected') {
+    echo "<p class='rejected'><strong>Status:</strong> " . htmlentities($row['status']) . "</p>";
+} else {
+    echo "<p><strong>Status:</strong> " . htmlentities($row['status']) . "</p>";
+}
+
+// display the accept/reject buttons or status message based on the status
+if ($status == 'Pending') {
+    echo "<form method='post' action='update_request.php'>";
+    echo "<input type='hidden' name='request_id' value='" . $row['request_id'] . "'>";
+    echo "<button type='submit' name='action' value='accept'>Accept</button>";
+    echo "<button type='submit' name='action' value='reject'>Reject</button>";
+    echo "</form>";
+}
+
+echo "</div>";
+
+  }
+} else {
+  echo "No requests found.";
+}
 ?>
-	<div class="cardStyle">
-		  <form id="category" method="POST"action="edit-category.php"> 		
-			<input type="hidden"name="cat_id"value="<?= $row['catid'] ?>">
-		  <div class="inputDiv">
-			&nbsp&nbsp&nbsp<b><label class="inputLabel"style="font-size:17px;" for="cat">Edit Category Name</label></b><br><br>
-			<input type="text"rows="2" size="48"name="category"style="width: 300px;height: 60px;font-size:16px;"id="category"value="<?= $row['categoryName'] ?>" required>
-		  </div>
-		  <br><br>
-		  <div class="inputDiv">
-	     <b><label class="inputLabel" style="font-size:17px;"for="text"> Edit Descripton</label></b><br><br>
-      
-    &nbsp&nbsp
-           
-	  <textarea class="span8" id="description"style="font-size:16px;"name="description"rows="4" cols="50" ><?= $row['categoryDescription'] ?></textarea>
-	  </div>
-      <br><br><br>
-		  
-		  <div class="buttonWrapper">
-			<button type="submit" id="submit"name="submit">
-			  <span style="color:white;">Update Category</span>
-			</button>
-		  </div>	
-		</form>
-		<?php }}
-else{?>
-<center><BR><BR><BR><BR><BR><BR><h5 style="font-size:50px;color:blue;">This category is not available for now !!!</h5></center>
-<?php }?>
 
-</center>
 
-                </div>
-
+  </div>
 
               </div>
             </div><!-- End Recent Sales -->
@@ -381,17 +409,46 @@ else{?>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+  
   <script>
+<?php
+  if(isset($_SESSION['status']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+      alertify.success('<?= $_SESSION['status'];?>');
+   	   <?php
+	  unset($_SESSION['status']);
+      }
+      ?>
+</script>
+	  
+<script>
   <?php
-   /**********************index.php**/
    if(isset($_SESSION['msg']))
      { 
 	?>
 	  alertify.set('notifier','position', 'top-center');
-     alertify.success('<?= $_SESSION['msg'];?>');
+       alertify.success('<?= $_SESSION['msg'];?>');
    	   <?php
-	  unset($_SESSION['msg']);
-      //if user refresh index.php after 1st time it will not see the message
+	   unset($_SESSION['msg']);
       }
       ?>
-	  </script>
+</script>
+
+<script>
+  <?php
+   if(isset($_SESSION['msg2']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+       alertify.success('<?= $_SESSION['msg2'];?>');
+   	   <?php
+	   unset($_SESSION['msg2']);
+      }
+      ?>
+</script>
+	  <script src="app.js"></script>
+</body>
+
+</html>

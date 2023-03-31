@@ -1,33 +1,9 @@
 <?php
 session_start();
 include ('config.php');
-date_default_timezone_set('Asia/Kolkata');// change according timezone
-$currentTime = date( 'd-m-Y h:i:s A', time () );
-
 if (!isset($_SESSION['username'])) {
   header("Location: admin-login.php");
   exit();
-}
-
-if(isset($_POST['submit']))
-{
-    $id=$_POST['cat_id'];
-	$category=$_POST['category'];
-	$description=$_POST['description'];
-	
-  
-	
-$query="UPDATE tbl_category SET categoryName='$category',categoryDescription='$description',updationDate='$currentTime' where catid='$id'";
-$query_run=mysqli_query($conn,$query);
-if($query_run)
-{
-	$_SESSION['status'] = "Category updated successfully";
-	header('location:index.php');
-}
-else
-{
-	echo "no";
-}
 }
 
 ?>
@@ -65,8 +41,8 @@ else
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
   <style>
-    #submit {
-  background-color:#0d6efd;
+    #submit1 {
+  background-color: #0d6efd;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -75,9 +51,35 @@ else
   cursor: pointer;
 }
 
-#submit:hover {
+#submit1:hover {
   background-color: #D3D3D3;
 }
+
+</style>
+
+<style>
+  .custom-select {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+.custom-select option {
+  font-size: 16px;
+  font-weight: normal;
+  background-color: #fff;
+  color: #333;
+}
+
 </style>
 
   <!-- =======================================================
@@ -116,6 +118,8 @@ else
             <i class="bi bi-search"></i>
           </a>
         </li><!-- End Search Icon-->
+
+        
 
         <li class="nav-item dropdown pe-3">
 
@@ -186,8 +190,9 @@ while($row=mysqli_fetch_array($query))
         </ul>
       </li><!-- End Components Nav -->
 
+
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav"href="subcategory.php">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
           <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
@@ -195,11 +200,12 @@ while($row=mysqli_fetch_array($query))
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav"href="manageseller.php">
           <i class="bi bi-journal-text"></i><span>Seller details</span>
         </a>
        
       </li><!-- End Forms Nav -->
+
       
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageuser.php">
@@ -229,7 +235,6 @@ if ($count > 0) {
     echo "no new notification";
   }
   ?>
-
   </span>
 
 </a><!-- End Notification Icon -->
@@ -265,7 +270,6 @@ else{
 
         
       </li><!-- End Tables Nav -->
-     
 
       <li class="nav-heading">Pages</li>
 
@@ -276,6 +280,7 @@ else{
         </a>
       </li><!-- End Profile Page Nav -->
 
+
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -283,11 +288,11 @@ else{
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Edit Category</h1>
+      <h1>Add Subcategory</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-          <li class="breadcrumb-item active">Edit category</li>
+          <li class="breadcrumb-item active">Add Video</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -306,48 +311,22 @@ else{
               <div class="card recent-sales overflow-auto">
 
                 <div class="card-body">
-                  <h5 class="card-title">Edit category</h5>
+                  <h5 class="card-title">Add Video</h5><br><br>
 
-                  
                   <center>
-<?php
-$id=$_GET['catid'];
-$query=mysqli_query($conn,"select * from tbl_category where catid='$id'and status=1");
-$num2=mysqli_num_rows($query);
-  if($num2>0)
-  {
-   while($row=mysqli_fetch_array($query))
-{
-?>
-	<div class="cardStyle">
-		  <form id="category" method="POST"action="edit-category.php"> 		
-			<input type="hidden"name="cat_id"value="<?= $row['catid'] ?>">
-		  <div class="inputDiv">
-			&nbsp&nbsp&nbsp<b><label class="inputLabel"style="font-size:17px;" for="cat">Edit Category Name</label></b><br><br>
-			<input type="text"rows="2" size="48"name="category"style="width: 300px;height: 60px;font-size:16px;"id="category"value="<?= $row['categoryName'] ?>" required>
-		  </div>
-		  <br><br>
-		  <div class="inputDiv">
-	     <b><label class="inputLabel" style="font-size:17px;"for="text"> Edit Descripton</label></b><br><br>
-      
-    &nbsp&nbsp
-           
-	  <textarea class="span8" id="description"style="font-size:16px;"name="description"rows="4" cols="50" ><?= $row['categoryDescription'] ?></textarea>
-	  </div>
-      <br><br><br>
-		  
-		  <div class="buttonWrapper">
-			<button type="submit" id="submit"name="submit">
-			  <span style="color:white;">Update Category</span>
-			</button>
-		  </div>	
+                  <form action="save_video.php" method="POST" enctype="multipart/form-data">
+                  <div class="inputfield">
+                                <label>Video File</label>
+                                <input type="file" name="video" class="form-control-file"/>
+                            </div>
+      <div class="inputfield">
+                        <button type="button" class="btn" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
+                        <button name="save" class="btn"><span class="btn"></span> Save</button>
+                    </div>
 		</form>
-		<?php }}
-else{?>
-<center><BR><BR><BR><BR><BR><BR><h5 style="font-size:50px;color:blue;">This category is not available for now !!!</h5></center>
-<?php }?>
+</div>
 
-</center>
+    </center>
 
                 </div>
 

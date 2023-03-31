@@ -1,37 +1,39 @@
 <?php
 session_start();
 include ('config.php');
-date_default_timezone_set('Asia/Kolkata');// change according timezone
-$currentTime = date( 'd-m-Y h:i:s A', time () );
-
 if (!isset($_SESSION['username'])) {
   header("Location: admin-login.php");
   exit();
 }
 
-if(isset($_POST['submit']))
-{
-    $id=$_POST['cat_id'];
-	$category=$_POST['category'];
-	$description=$_POST['description'];
+if(isset($_POST['submit1']))
+ {
 	
+	$subcat=$_POST['subcategory'];
+    $category=$_POST['category'];
+	$sql="select * from tbl_subcategory where (subcategory='$subcat');";
+
+	$res=mysqli_query($conn,$sql);
+
+	if (mysqli_num_rows($res) > 0) {
+	  
+	  	$row = mysqli_fetch_assoc($res);
+	  if($subcat==isset($row['subcategory']))
+	  {
+		
+			$_SESSION['status'] = "This Subcategory already exist";
+	  }
   
+	  }
+   else{
+
 	
-$query="UPDATE tbl_category SET categoryName='$category',categoryDescription='$description',updationDate='$currentTime' where catid='$id'";
-$query_run=mysqli_query($conn,$query);
-if($query_run)
-{
-	$_SESSION['status'] = "Category updated successfully";
-	header('location:index.php');
-}
-else
-{
-	echo "no";
-}
-}
+    $sql=mysqli_query($conn,"insert into tbl_subcategory(categoryid,subcategory,status) values('$category','$subcat','1')");
+    $_SESSION['substatus'] = "Subcategory added successfully";
+	   }
+ }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -46,7 +48,6 @@ else
   <!-- Favicons -->
   <link href="assets/img/favicon.png" rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-  
 
   <!-- Google Fonts -->
   <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -64,22 +65,33 @@ else
 		<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
-  <style>
-    #submit {
-  background-color:#0d6efd;
-  color: white;
+<style>
+  .edit-button {
+  background-color: #007bff;
+  color: #fff;
   border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 5px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 18px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-#submit:hover {
-  background-color: #D3D3D3;
+.edit-button:hover {
+  background-color: #0062cc;
 }
-</style>
+.edit-button {
+  font-size: 15px; /* change the font size */
+  padding: 8px 12px; /* change the padding */
+}
+.edit-button {
+  height: 31px;
+  width: 78px;
+  text-align: center;
+}
 
+
+  </style>
   <!-- =======================================================
   * Template Name: NiceAdmin - v2.5.0
   * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
@@ -117,6 +129,9 @@ else
           </a>
         </li><!-- End Search Icon-->
 
+        
+          
+
         <li class="nav-item dropdown pe-3">
 
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
@@ -146,7 +161,7 @@ while($row=mysqli_fetch_array($query))
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+              <a class="dropdown-item d-flex align-items-center" href="admin-profile.php">
                 <i class="bi bi-person"></i>
                 <span>My Profile</span>
               </a>
@@ -185,9 +200,8 @@ while($row=mysqli_fetch_array($query))
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
         </ul>
       </li><!-- End Components Nav -->
-
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav"href="subcategory.php">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
           <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
@@ -195,7 +209,7 @@ while($row=mysqli_fetch_array($query))
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav"href="manageseller.php">
           <i class="bi bi-journal-text"></i><span>Seller details</span>
         </a>
        
@@ -208,6 +222,7 @@ while($row=mysqli_fetch_array($query))
        
       </li><!-- End Forms Nav -->
 
+      
       <li class="nav-item">
         <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="approve.php">
   
@@ -276,6 +291,8 @@ else{
         </a>
       </li><!-- End Profile Page Nav -->
 
+
+
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -283,11 +300,11 @@ else{
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Edit Category</h1>
+      <h1>Subcategory</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-          <li class="breadcrumb-item active">Edit category</li>
+          <li class="breadcrumb-item active">Subcategory</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -304,53 +321,79 @@ else{
             <!-- Recent Sales -->
             <div class="col-12">
               <div class="card recent-sales overflow-auto">
-
                 <div class="card-body">
-                  <h5 class="card-title">Edit category</h5>
+                <div class="filter">
+                 <B><div style = "position:relative; left:-23px; top:2px;"><a href="add-subcategory.php">Click to add new subcategory</a></div></B>
+              
+            </div>
 
-                  
-                  <center>
-<?php
-$id=$_GET['catid'];
-$query=mysqli_query($conn,"select * from tbl_category where catid='$id'and status=1");
-$num2=mysqli_num_rows($query);
-  if($num2>0)
-  {
-   while($row=mysqli_fetch_array($query))
-{
-?>
-	<div class="cardStyle">
-		  <form id="category" method="POST"action="edit-category.php"> 		
-			<input type="hidden"name="cat_id"value="<?= $row['catid'] ?>">
-		  <div class="inputDiv">
-			&nbsp&nbsp&nbsp<b><label class="inputLabel"style="font-size:17px;" for="cat">Edit Category Name</label></b><br><br>
-			<input type="text"rows="2" size="48"name="category"style="width: 300px;height: 60px;font-size:16px;"id="category"value="<?= $row['categoryName'] ?>" required>
-		  </div>
-		  <br><br>
-		  <div class="inputDiv">
-	     <b><label class="inputLabel" style="font-size:17px;"for="text"> Edit Descripton</label></b><br><br>
-      
-    &nbsp&nbsp
-           
-	  <textarea class="span8" id="description"style="font-size:16px;"name="description"rows="4" cols="50" ><?= $row['categoryDescription'] ?></textarea>
-	  </div>
-      <br><br><br>
-		  
-		  <div class="buttonWrapper">
-			<button type="submit" id="submit"name="submit">
-			  <span style="color:white;">Update Category</span>
-			</button>
-		  </div>	
-		</form>
-		<?php }}
-else{?>
-<center><BR><BR><BR><BR><BR><BR><h5 style="font-size:50px;color:blue;">This category is not available for now !!!</h5></center>
-<?php }?>
+                  <h5 class="card-title">Subcategory</h5>
+                  <table class="table table-borderless datatable">
+  <thead>
+    <tr>
+    <th scope="col">Category</th>
+      <th scope="col">Sl.No</th>
+      <th scope="col">Subcategory</th>
+      <th scope="col">Edit</th>
+      <th scope="col">Created on</th>
+      <th scope="col">Action</th>
+      <th scope="col">Last updated</th>
+    </tr>
+  </thead>
+  <tbody>
 
-</center>
+    <?php
+      $query=mysqli_query($conn,"SELECT tbl_subcategory.subid, tbl_category.categoryName, tbl_subcategory.subcategory, tbl_subcategory.creationDate, tbl_subcategory.updationDate, tbl_subcategory.status FROM tbl_subcategory JOIN tbl_category ON tbl_category.catid=tbl_subcategory.categoryid ORDER BY tbl_category.categoryName");
+      $current_category = "";
+      $cnt=1;
+      while($row=mysqli_fetch_array($query)) {
+        $category = $row['categoryName'];
+        $subcategory = $row['subcategory'];
+    ?>
+
+      <?php if ($category != $current_category) { ?>
+        <tr>
+          <td colspan="7"><strong><?php echo $category; ?></strong></td>
+        </tr>
+        <?php $current_category = $category; } ?>
+
+      <tr>
+        <td>
+        <td><?php echo htmlentities($cnt); ?></td>
+        <td><?php echo htmlentities($subcategory); ?></td>
+        <td>
+          <form action="edit-subcategory.php" method="get">
+            <input type="hidden" name="subid" value="<?php echo $row['subid'] ?>">
+            <button type="submit" class="edit-button">Edit</button>
+          </form>
+        </td>
+
+        <td><?php echo htmlentities($row['creationDate']); ?></td>
+        <td>
+        <?php if($row['status']==1){ ?>
+          <form action="subinactivate.php" method="post">
+            <input type="hidden" name="id" value="<?php echo $row['subid']; ?>">
+            <input type="hidden" name="status" value="0">
+            <button type="submit" class="btn btn-danger btn-sm">Disable</button>
+          </form>
+        <?php } else { ?>
+          <form action="subactivate.php" method="post">
+            <input type="hidden" name="id" value="<?php echo $row['subid']; ?>">
+            <input type="hidden" name="status" value="1">
+            <button type="submit" class="btn btn-success btn-sm">Enable</button>
+          </form>
+        <?php } ?>
+      </td>
+      <td><?php echo htmlentities($row['updationDate']); ?></td>
+
+      </tr>
+      <?php $cnt=$cnt+1; } ?>
+
+  </tbody>
+</table>
+
 
                 </div>
-
 
               </div>
             </div><!-- End Recent Sales -->
@@ -381,17 +424,61 @@ else{?>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+  
   <script>
-  <?php
-   /**********************index.php**/
-   if(isset($_SESSION['msg']))
+<?php
+   
+   if(isset($_SESSION['msg6']))
      { 
 	?>
 	  alertify.set('notifier','position', 'top-center');
-     alertify.success('<?= $_SESSION['msg'];?>');
+     alertify.success('<?= $_SESSION['msg6'];?>');
    	   <?php
-	  unset($_SESSION['msg']);
-      //if user refresh index.php after 1st time it will not see the message
+	  unset($_SESSION['msg6']);
+    
       }
       ?>
 	  </script>
+
+	  <script>
+  <?php
+   if(isset($_SESSION['substatus']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+     alertify.success('<?= $_SESSION['substatus'];?>');
+   	   <?php
+	  unset($_SESSION['substatus']);
+      
+      }
+      ?>
+	  </script>
+
+	  <script>
+  <?php
+   if(isset($_SESSION['status']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+     alertify.success('<?= $_SESSION['status'];?>');
+   	   <?php
+	  unset($_SESSION['status']);
+      }
+      ?>
+	  </script>
+
+	  <script>
+  <?php
+   if(isset($_SESSION['msg5']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+     alertify.success('<?= $_SESSION['msg5'];?>');
+   	   <?php
+	  unset($_SESSION['msg5']);
+      }
+      ?>
+	  </script>
+</body>
+
+</html>

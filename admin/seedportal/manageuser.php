@@ -3,11 +3,11 @@ session_start();
 include ('config.php');
 date_default_timezone_set('Asia/Kolkata');// change according timezone
 $currentTime = date( 'd-m-Y h:i:s A', time () );
-
 if (!isset($_SESSION['username'])) {
   header("Location: admin-login.php");
   exit();
 }
+
 
 if(isset($_POST['submit']))
 {
@@ -15,7 +15,6 @@ if(isset($_POST['submit']))
 	$category=$_POST['category'];
 	$description=$_POST['description'];
 	
-  
 	
 $query="UPDATE tbl_category SET categoryName='$category',categoryDescription='$description',updationDate='$currentTime' where catid='$id'";
 $query_run=mysqli_query($conn,$query);
@@ -65,18 +64,14 @@ else
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
   <style>
-    #submit {
-  background-color:#0d6efd;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
+    .pdf-link {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: bold;
 }
 
-#submit:hover {
-  background-color: #D3D3D3;
+.pdf-link:hover {
+  text-decoration: underline;
 }
 </style>
 
@@ -116,6 +111,8 @@ else
             <i class="bi bi-search"></i>
           </a>
         </li><!-- End Search Icon-->
+
+       
 
         <li class="nav-item dropdown pe-3">
 
@@ -186,8 +183,9 @@ while($row=mysqli_fetch_array($query))
         </ul>
       </li><!-- End Components Nav -->
 
+
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav"href="subcategory.php">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
           <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
@@ -195,7 +193,7 @@ while($row=mysqli_fetch_array($query))
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageseller.php">
           <i class="bi bi-journal-text"></i><span>Seller details</span>
         </a>
        
@@ -208,6 +206,7 @@ while($row=mysqli_fetch_array($query))
        
       </li><!-- End Forms Nav -->
 
+      
       <li class="nav-item">
         <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="approve.php">
   
@@ -236,7 +235,6 @@ if ($count > 0) {
 
         
       </li><!-- End Tables Nav -->
-
        
       <li class="nav-item">
         <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="message.php">
@@ -276,6 +274,7 @@ else{
         </a>
       </li><!-- End Profile Page Nav -->
 
+
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -283,11 +282,11 @@ else{
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Edit Category</h1>
+      <h1>Users details</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-          <li class="breadcrumb-item active">Edit category</li>
+          <li class="breadcrumb-item active">User details</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -300,57 +299,55 @@ else{
 
               </div>
             </div><!-- End Reports -->
-
-            <!-- Recent Sales -->
-            <div class="col-12">
+ <!-- Recent Sales -->
+ <div class="col-12">
               <div class="card recent-sales overflow-auto">
-
                 <div class="card-body">
-                  <h5 class="card-title">Edit category</h5>
+                <div class="filter">
+                
+            </div>
 
-                  
-                  <center>
-<?php
-$id=$_GET['catid'];
-$query=mysqli_query($conn,"select * from tbl_category where catid='$id'and status=1");
-$num2=mysqli_num_rows($query);
-  if($num2>0)
-  {
-   while($row=mysqli_fetch_array($query))
+                  <h5 class="card-title">User details</h5>
+
+                  <table class="table table-borderless datatable">
+                    <thead>
+                      <tr>
+                      <th scope="col">Sl.No</th>
+											<th scope="col">Username</th>
+											<th scope="col">Email </th>
+											<th scope="col">Contact no</th>
+											<th scope="col">Name/Shippping Address/City/Pincode </th>
+                                            
+									     	<th scope="col">Reg. Date </th>
+										
+                      </tr>
+                    </thead>
+                    <tbody>
+                                       
+<?php $query=mysqli_query($conn,"SELECT userreg.firstname, userreg.contactno,userreg.status,userreg.userid, userreg.userregDate, login.email, tbl_address.shippingAddress, tbl_address.shippingCity, tbl_address.shippingPincode, tbl_address.shipphone, tbl_address.shipname 
+FROM userreg JOIN login ON userreg.logid = login.logid LEFT JOIN tbl_address ON userreg.userid = tbl_address.userid WHERE userreg.status = '1'");
+$cnt=1;
+while($row=mysqli_fetch_array($query))
 {
-?>
-	<div class="cardStyle">
-		  <form id="category" method="POST"action="edit-category.php"> 		
-			<input type="hidden"name="cat_id"value="<?= $row['catid'] ?>">
-		  <div class="inputDiv">
-			&nbsp&nbsp&nbsp<b><label class="inputLabel"style="font-size:17px;" for="cat">Edit Category Name</label></b><br><br>
-			<input type="text"rows="2" size="48"name="category"style="width: 300px;height: 60px;font-size:16px;"id="category"value="<?= $row['categoryName'] ?>" required>
-		  </div>
-		  <br><br>
-		  <div class="inputDiv">
-	     <b><label class="inputLabel" style="font-size:17px;"for="text"> Edit Descripton</label></b><br><br>
-      
-    &nbsp&nbsp
-           
-	  <textarea class="span8" id="description"style="font-size:16px;"name="description"rows="4" cols="50" ><?= $row['categoryDescription'] ?></textarea>
-	  </div>
-      <br><br><br>
-		  
-		  <div class="buttonWrapper">
-			<button type="submit" id="submit"name="submit">
-			  <span style="color:white;">Update Category</span>
-			</button>
-		  </div>	
-		</form>
-		<?php }}
-else{?>
-<center><BR><BR><BR><BR><BR><BR><h5 style="font-size:50px;color:blue;">This category is not available for now !!!</h5></center>
-<?php }?>
+?>									
+	        								
+                <tr>
+                <td><?php echo htmlentities($cnt);?></td>
+											<td><?php echo htmlentities($row['firstname']);?></td>
+											<td><?php echo htmlentities($row['email']);?></td>
+											<td> <?php echo htmlentities($row['contactno']);?></td>
+											<td><?php echo htmlentities($row['shipname'].",".$row['shippingCity'].",".$row['shippingAddress'].",".$row['shippingPincode']);?></td>
+											
 
-</center>
+                                            <td><?php echo htmlentities($row['userregDate']);?></td>
+											
+				
+				</tr>
+				<?php $cnt=$cnt+1; } ?>
+                    </tbody>
+                  </table>
 
                 </div>
-
 
               </div>
             </div><!-- End Recent Sales -->
@@ -381,17 +378,46 @@ else{?>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
-  <script>
-  <?php
-   /**********************index.php**/
-   if(isset($_SESSION['msg']))
+  
+<script>
+<?php
+  if(isset($_SESSION['status']))
      { 
 	?>
 	  alertify.set('notifier','position', 'top-center');
-     alertify.success('<?= $_SESSION['msg'];?>');
+      alertify.success('<?= $_SESSION['status'];?>');
    	   <?php
-	  unset($_SESSION['msg']);
-      //if user refresh index.php after 1st time it will not see the message
+	  unset($_SESSION['status']);
       }
       ?>
-	  </script>
+</script>
+	  
+<script>
+  <?php
+   if(isset($_SESSION['msg3']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+       alertify.success('<?= $_SESSION['msg3'];?>');
+   	   <?php
+	   unset($_SESSION['msg3']);
+      }
+      ?>
+</script>
+
+<script>
+  <?php
+   if(isset($_SESSION['message']))
+     { 
+	?>
+	  alertify.set('notifier','position', 'top-center');
+       alertify.success('<?= $_SESSION['message'];?>');
+   	   <?php
+	   unset($_SESSION['message']);
+      }
+      ?>
+</script>
+
+</body>
+
+</html>

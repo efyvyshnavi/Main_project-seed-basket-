@@ -15,7 +15,6 @@ if(isset($_POST['submit']))
 	$category=$_POST['category'];
 	$description=$_POST['description'];
 	
-  
 	
 $query="UPDATE tbl_category SET categoryName='$category',categoryDescription='$description',updationDate='$currentTime' where catid='$id'";
 $query_run=mysqli_query($conn,$query);
@@ -66,7 +65,7 @@ else
   <link href="assets/css/style.css" rel="stylesheet">
   <style>
     #submit {
-  background-color:#0d6efd;
+  background-color: #0d6efd;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -76,7 +75,7 @@ else
 }
 
 #submit:hover {
-  background-color: #D3D3D3;
+  background-color: #0d6efd;
 }
 </style>
 
@@ -155,9 +154,6 @@ while($row=mysqli_fetch_array($query))
               <hr class="dropdown-divider">
             </li>
 
-            <li>
-              <hr class="dropdown-divider">
-            </li>
 
             <li>
               <a class="dropdown-item d-flex align-items-center" href="logout.php">
@@ -185,9 +181,8 @@ while($row=mysqli_fetch_array($query))
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
         </ul>
       </li><!-- End Components Nav -->
-
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#components-nav"href="subcategory.php">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" href="subcategory.php">
           <i class="bi bi-menu-button-wide"></i><span>Subcategory</span>
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
@@ -195,12 +190,12 @@ while($row=mysqli_fetch_array($query))
       </li><!-- End Components Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageseller.php">
           <i class="bi bi-journal-text"></i><span>Seller details</span>
         </a>
        
       </li><!-- End Forms Nav -->
-      
+
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#forms-nav" href="manageuser.php">
           <i class="bi bi-journal-text"></i><span>User details</span>
@@ -208,6 +203,7 @@ while($row=mysqli_fetch_array($query))
        
       </li><!-- End Forms Nav -->
 
+     
       <li class="nav-item">
         <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="approve.php">
   
@@ -236,7 +232,6 @@ if ($count > 0) {
 
         
       </li><!-- End Tables Nav -->
-
        
       <li class="nav-item">
         <a class="nav-link nav-icon" data-bs-target="#tables-nav"href="message.php">
@@ -265,6 +260,7 @@ else{
 
         
       </li><!-- End Tables Nav -->
+      
      
 
       <li class="nav-heading">Pages</li>
@@ -276,6 +272,7 @@ else{
         </a>
       </li><!-- End Profile Page Nav -->
 
+
     </ul>
 
   </aside><!-- End Sidebar-->
@@ -283,11 +280,11 @@ else{
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Edit Category</h1>
+      <h1>Add Category</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-          <li class="breadcrumb-item active">Edit category</li>
+          <li class="breadcrumb-item active">Add Category</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -306,48 +303,33 @@ else{
               <div class="card recent-sales overflow-auto">
 
                 <div class="card-body">
-                  <h5 class="card-title">Edit category</h5>
+                  <h5 class="card-title">Add new category</h5><br>
 
-                  
                   <center>
-<?php
-$id=$_GET['catid'];
-$query=mysqli_query($conn,"select * from tbl_category where catid='$id'and status=1");
-$num2=mysqli_num_rows($query);
-  if($num2>0)
-  {
-   while($row=mysqli_fetch_array($query))
-{
-?>
-	<div class="cardStyle">
-		  <form id="category" method="POST"action="edit-category.php"> 		
-			<input type="hidden"name="cat_id"value="<?= $row['catid'] ?>">
+      <div class="cardStyle">
+		  <form id="category-form" method="POST" action="index.php">
+			
 		  <div class="inputDiv">
-			&nbsp&nbsp&nbsp<b><label class="inputLabel"style="font-size:17px;" for="cat">Edit Category Name</label></b><br><br>
-			<input type="text"rows="2" size="48"name="category"style="width: 300px;height: 60px;font-size:16px;"id="category"value="<?= $row['categoryName'] ?>" required>
-		  </div>
-		  <br><br>
-		  <div class="inputDiv">
-	     <b><label class="inputLabel" style="font-size:17px;"for="text"> Edit Descripton</label></b><br><br>
-      
-    &nbsp&nbsp
-           
-	  <textarea class="span8" id="description"style="font-size:16px;"name="description"rows="4" cols="50" ><?= $row['categoryDescription'] ?></textarea>
-	  </div>
-      <br><br><br>
+			<b><label style="font-size:17px;" class="inputLabel" for="cat">Enter Category Name</label></b><br><br>
+      <input type="text" name="category" id="category" style="width: 300px; height: 60px; text-transform: capitalize;" required pattern="[A-Za-z ]{4,}" oninput="capitalize(this)" oninvalid="this.setCustomValidity('Category must only contain letters and spaces with atleast 4 characters')" oninput="this.setCustomValidity('')">
+
+</div>
+		  </div><br>
 		  
+		  <div class="inputDiv">
+			<b><label style="font-size:17px;" class="inputLabel" for="text">Descripton</label></b><br><br>
+			<textarea class="span8" id="des"name="description"rows="4"cols="50"required pattern="^(.|\s)*[a-zA-Z]+(.|\s)*$"oninvalid="this.setCustomValidity('Enter a valid description')"
+             oninput="this.setCustomValidity('')"title="Enter a valid description"></textarea>
+	     </div><br><br>
+	  
 		  <div class="buttonWrapper">
-			<button type="submit" id="submit"name="submit">
-			  <span style="color:white;">Update Category</span>
-			</button>
+		    <button type="csubmit" id="submit"name="csubmit">
+		    <span style="color:white">CREATE CATEGORY</span>
+		    </button>
 		  </div>	
 		</form>
-		<?php }}
-else{?>
-<center><BR><BR><BR><BR><BR><BR><h5 style="font-size:50px;color:blue;">This category is not available for now !!!</h5></center>
-<?php }?>
-
-</center>
+      </div>
+    </center>
 
                 </div>
 
@@ -381,6 +363,15 @@ else{?>
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+  <script>
+function capitalize(input) {
+  var firstLetter = input.value.slice(0, 1);
+  var remainingLetters = input.value.slice(1);
+  input.value = firstLetter.toUpperCase() + remainingLetters.toLowerCase();
+}
+</script>
+
+  
   <script>
   <?php
    /**********************index.php**/
