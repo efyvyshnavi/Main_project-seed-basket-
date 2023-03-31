@@ -2,37 +2,18 @@
 session_start();
 error_reporting(0);
 include('config.php');
-if(isset($_GET['action']) && $_GET['action']=="add"){
-	$id=intval($_GET['id']);
-	if(isset($_SESSION['cart'][$id])){
-		$_SESSION['cart'][$id]['quantity']++;
-	}else{
-		$sql_p="SELECT * FROM products WHERE id={$id}";
-		$query_p=mysqli_query($con,$sql_p);
-		if(mysqli_num_rows($query_p)!=0){
-			$row_p=mysqli_fetch_array($query_p);
-			$_SESSION['cart'][$row_p['id']]=array("quantity" => 1, "price" => $row_p['productPrice']);
-					echo "<script>alert('Product has been added to the cart')</script>";
-		echo "<script type='text/javascript'> document.location ='my-cart.php'; </script>";
-		}else{
-			$message="Product ID is invalid";
-		}
-	}
-}
+$email=$_SESSION['email'];
 $pid=intval($_GET['pid']);
+
 if(isset($_GET['pid']) && $_GET['action']=="wishlist" ){
-	if(strlen($_SESSION['login'])==0)
-    {   
-header('location:login.php');
-}
-else
-{
+	
+
 mysqli_query($con,"insert into wishlist(userId,productId) values('".$_SESSION['id']."','$pid')");
 echo "<script>alert('Product aaded in wishlist');</script>";
 header('location:my-wishlist.php');
 
 }
-}
+
 if(isset($_POST['submit']))
 {
 	$qty=$_POST['quality'];
@@ -41,8 +22,14 @@ if(isset($_POST['submit']))
 	$name=$_POST['name'];
 	$summary=$_POST['summary'];
 	$review=$_POST['review'];
-	mysqli_query($con,"insert into productreviews(productId,quality,price,value,name,summary,review) values('$pid','$qty','$price','$value','$name','$summary','$review')");
+	mysqli_query($con,"insert into tbl_productreviews(pid,quality,price,value,name,summary,review) values('$pid','$qty','$price','$value','$name','$summary','$review')");
 }
+if(isset($_GET['pid']) && $_GET['action']=="wishlist" ){
+	mysqli_query($con,"insert into tbl_wishlist(pid,logid,status) values('".$_GET['pid']."','$logid','1')");
+	echo "<script>alert('Product aaded in wishlist');</script>";
+	header('location:wishlist.php');
+	
+	}
 
 
 ?>
@@ -78,6 +65,47 @@ if(isset($_POST['submit']))
         <!-- Fonts --> 
 		<link href='http://fonts.googleapis.com/css?family=Roboto:300,400,500,700' rel='stylesheet' type='text/css'>
 		<link rel="shortcut icon" href="assets/images/favicon.ico">
+		<style>
+		a[data-lightbox="image-1"] img {
+  max-width: 100%;
+  max-height: 350%;
+  transition: transform 0.2s ease-in-out;
+}
+
+a[data-lightbox="image-1"]:hover img {
+  transform: scale(1.1);
+}
+
+</style>
+<style>
+.cart-quantity {
+  position: absolute;
+  top: 20px;
+  left: -20px;
+  transform: translate(-50%, -50%);
+}
+</style>
+<style>
+/* Styling for stars */
+.rating .star {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url('img/star2.png');
+  background-size: cover;
+  cursor: pointer;
+}
+
+/* Styling for selected stars */
+.rating .star.selected {
+  background-image: url('img/star.png');
+}
+
+/* Styling for average rating */
+.average-rating {
+  font-size: 16px;
+}
+</style>
 	</head>
     <body class="cnt-home">
 	
@@ -98,7 +126,7 @@ if(isset($_POST['submit']))
 	<div class="container">
 		<div class="breadcrumb-inner">
 <?php
-$ret=mysqli_query($conn,"select category.categoryName as catname,subcategory.subcategory as subcatname,product.pname as pname from product join category on category.catid=product.catid join subcategory on subcategory.subid=product.subid where product.pid='$pid'");
+$ret=mysqli_query($con,"select tbl_category.categoryName as catname,tbl_subcategory.subcategory as subcatname,tbl_product.pname as pname from tbl_product join tbl_category on tbl_category.catid=tbl_product.catid join tbl_subcategory on tbl_subcategory.subid=tbl_product.subid where tbl_product.pid='$pid'");
 while ($rw=mysqli_fetch_array($ret)) {
 
 ?>
@@ -127,7 +155,7 @@ while ($rw=mysqli_fetch_array($ret)) {
 	<div class="sidebar-widget-body m-t-10">
 		<div class="accordion">
 
-		            <?php $sql=mysqli_query($conn,"select catid,categoryName  from category");
+		            <?php $sql=mysqli_query($con,"select catid,categoryName  from tbl_category");
 while($row=mysqli_fetch_array($sql))
 {
     ?>
@@ -144,107 +172,56 @@ while($row=mysqli_fetch_array($sql))
 	</div>
 </div>
 	<!-- ============================================== CATEGORY : END ============================================== -->					<!-- ============================================== HOT DEALS ============================================== -->
-<div class="sidebar-widget hot-deals wow fadeInUp">
-	<h3 class="section-title">hot deals</h3>
-	<div class="owl-carousel sidebar-carousel custom-carousel owl-theme outer-top-xs">
-		
-								   <?php
-$ret=mysqli_query($conn,"select * from product where catid='$cid'");
-while ($rws=mysqli_fetch_array($ret)) {
-
-?>
-
-								        
-													<div class="item">
-					<div class="products">
-						<div class="hot-deal-wrapper">
-							<div class="image">
-								<img src="admin/productimages/<?php echo htmlentities($rws['catid']);?>/<?php echo htmlentities($rws['pimage']);?>"  width="200" height="334" alt="">
-							</div>
-							
-						</div><!-- /.hot-deal-wrapper -->
-
-						<div class="product-info text-left m-t-20">
-							<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($rws['id']);?>"><?php echo htmlentities($rws['pname']);?></a></h3>
-							<div class="rating rateit-small"></div>
-
-							<div class="product-price">	
-								<span class="price">
-									Rs. <?php echo htmlentities($rws['price2']);?>.00
-								</span>
-									
-							    <span class="price-before-discount">Rs.<?php echo htmlentities($row['price1']);?></span>					
-							
-							</div><!-- /.product-price -->
-							
-						</div><!-- /.product-info -->
-
-						<div class="cart clearfix animate-effect">
-							<div class="action">
-								
-								<div class="add-cart-button btn-group">
-									<button class="btn btn-primary icon" data-toggle="dropdown" type="button">
-								<?php if($row['productAvailability']=='In Stock'){?>
-										<button class="btn btn-primary icon" data-toggle="dropdown" type="button">
-								<i class="fa fa-shopping-cart"></i>													
-							</button>
-							<a href="category.php?page=product&action=add&id=<?php echo $row['id']; ?>">
-							<button class="btn btn-primary" type="button">Add to cart</button></a>
-								<?php } else {?>
-							<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
-															
-								</div>
-								
-							</div><!-- /.action -->
-						</div><!-- /.cart -->
-					</div>	
-					</div>		
-					<?php } ?>        
-						
-	    
-    </div><!-- /.sidebar-widget -->
-</div>
 
 <!-- ============================================== COLOR: END ============================================== -->
 				</div>
 			</div><!-- /.sidebar -->
 <?php 
-$ret=mysqli_query($conn,"select * from product where pid='$pid'");
+$ret=mysqli_query($con,"select * from tbl_product where pid='$pid'");
 while($row=mysqli_fetch_array($ret))
 {
-
 ?>
-<div class='col-md-9'>
+<form method="POST"action="manage_cart.php">	
+			<div class='col-md-9'>
 				<div class="row  wow fadeInUp">
+					     <div class="col-xs-12 col-sm-6 col-md-5 gallery-holder">
+                        <div class="product-item-holder size-big single-product-gallery small-gallery">
 
-			       <div class="col-xs-12 col-sm-6 col-md-5 gallery-holder">
-                             <div class="product-item-holder size-big single-product-gallery small-gallery">
+        <div id="owl-single-product">
 
-                              <div id="owl-single-product">
-
-                    
-               <div class="single-product-gallery-item" id="slide1">
-                    <img class="img-responsive" alt="" src="assets/images/blank.gif" data-echo="admin/productimages/<?php echo htmlentities($row['catid']);?>/<?php echo htmlentities($row['pimage']);?>" width="370" height="350"/>
-                
+		<div class="single-product-gallery-item" id="slide1">
+ <a data-lightbox="image-1" data-title="<?php echo htmlentities($row['pname']);?>"<img src="../../../../admindash/shopping/admin/images/<?php echo $row['image'];?>">
+ <img src="../images/<?php  echo $row['image'];?>" width="334" height="380" />
+                </a>
             </div>
-           </div>
+			
 
-    
+            
+        </div><!-- /.single-product-slider -->
+</div>
     </div>
-</div>     			
+    			
+
+
+
 
 					<div class='col-sm-6 col-md-7 product-info-block'>
 						<div class="product-info">
-							<h1 class="name"><?php echo htmlentities($row['pname']);?></h1>
+							<h1 class="name"><?php echo htmlentities($row['pname']);?></h1><br>
+							
+<?php $rt=mysqli_query($con,"select * from tbl_productreviews where pid='$pid'");
+$num=mysqli_num_rows($rt);
+{
+?>		
+
+											<a href="#" class="lnk" style="font-size:16px">(<?php echo htmlentities($num);?> Reviews)</a>
+									
+<?php } ?>
+
 
 							<div class="stock-container info-container m-t-10">
 								<div class="row">
-									<div class="col-sm-3">
-										<div class="stock-box">
-											<span class="label">Availability :</span>
-										</div>	
-									</div>
+									
 									<div class="col-sm-9">
 										<div class="stock-box">
 											<span class="value"><?php echo htmlentities($row['availability']);?></span>
@@ -252,6 +229,8 @@ while($row=mysqli_fetch_array($ret))
 									</div>
 								</div><!-- /.row -->	
 							</div>
+
+
 
 
 <div class="stock-container info-container m-t-10">
@@ -294,7 +273,7 @@ while($row=mysqli_fetch_array($ret))
 
 									<div class="col-sm-6">
 										<div class="favorite-button m-t-10">
-											<a class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Wishlist" href="product-details.php?pid=<?php echo htmlentities($row['id'])?>&&action=wishlist">
+											<a class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Wishlist" href="product-details.php?pid=<?php echo htmlentities($row['pid'])?>&&action=wishlist">
 											    <i class="fa fa-heart"></i>
 											</a>
 											
@@ -317,41 +296,47 @@ while($row=mysqli_fetch_array($ret))
 										<span class="label">Qty :</span>
 									</div>
 									
-									<div class="col-sm-2">
-										<div class="cart-quantity">
-											<div class="quant-input">
-								                <div class="arrows">
-								                  <div class="arrow plus gradient"><span class="ir"><i class="icon fa fa-sort-asc"></i></span></div>
-								                  <div class="arrow minus gradient"><span class="ir"><i class="icon fa fa-sort-desc"></i></span></div>
-								                </div>
-								                <input type="text" value="1">
-							              </div>
-							            </div>
+									<div class="row">
+									<div class="col-sm-2 d-flex align-items-center justify-content-center">
+										<div class="cart-quantity position-relative">
+										<div class="quant-input">
+											<div class="arrows">
+											<input class="text-center" type="number" name="quantity" value="1" min="1" max="50">    
+											</div>
+										</div>
+										</div>
 									</div>
-
+									</div>
+<br>
 									<div class="col-sm-7">
-<?php if($row['availability']=='In Stock'){?>
-										<a href="product-details.php?page=product&action=add&id=<?php echo $row['id']; ?>" class="btn btn-primary"><i class="fa fa-shopping-cart inner-right-vs"></i> ADD TO CART</a>
-													<?php } else {?>
-							<div class="action" style="color:red">Out of Stock</div>
-					<?php } ?>
+									
+									<li class="add-cart-button btn-group">
+							<input type="text" value="<?php echo $_GET['pid']?>" name="product_id"hidden>
+                                                        <input type="text" value="<?php echo $row['sellerid']?>" name="sellerid"hidden>
+							<input type="text" value="<?php echo $_GET['cid']?>" name="cid"hidden>
+								<?php if($row['availability']=='In Stock'){?>
+									<button class="btn btn-primary icon" data-toggle="dropdown" type="button"style="background-color:#686868"><i class="fa fa-shopping-cart"></i></button>
+									<input class="btn btn-primary" type="submit" name="add_to_cart" value="Add to cart">
+						
+									
+						
+								<?php } else {?>
+									<div class="action" style="color:red">Out of Stock</div>
+								<?php } ?>	
+								</form>
+							
+						</li>
 									</div>
 
 									
 								</div><!-- /.row -->
 							</div><!-- /.quantity-container -->
-
-							
-							</div>
-
-							
-
-							
 						</div><!-- /.product-info -->
 					</div><!-- /.col-sm-7 -->
 				</div><!-- /.row -->
 
-				
+
+					
 				<div class="product-tabs inner-bottom-xs  wow fadeInUp">
 					<div class="row">
 						<div class="col-sm-3">
@@ -375,7 +360,7 @@ while($row=mysqli_fetch_array($ret))
 																				
 										<div class="product-reviews">
 											<h4 class="title">Customer Reviews</h4>
-<?php $qry=mysqli_query($con,"select * from productreviews where productId='$pid'");
+<?php $qry=mysqli_query($con,"select * from tbl_productreviews where pid='$pid'");
 while($rvw=mysqli_fetch_array($qry))
 {
 ?>
@@ -486,15 +471,17 @@ while($rvw=mysqli_fetch_array($qry))
 					</div><!-- /.row -->
 				</div><!-- /.product-tabs -->
 
-<?php $cid=$row['category'];
-			$subcid=$row['subCategory']; } ?>
+
+
+				<?php $cid=$row['catid'];
+				$subcid=$row['subid']; } ?>
 				<!-- ============================================== UPSELL PRODUCTS ============================================== -->
 <section class="section featured-product wow fadeInUp">
 	<h3 class="section-title">Realted Products </h3>
 	<div class="owl-carousel home-owl-carousel upsell-product custom-carousel owl-theme outer-top-xs">
 	   
 		<?php 
-$qry=mysqli_query($con,"select * from products where subCategory='$subcid' and category='$cid'");
+$qry=mysqli_query($con,"select * from tbl_product where subid='$subcid' and catid='$cid'");
 while($rw=mysqli_fetch_array($qry))
 {
 
@@ -506,7 +493,7 @@ while($rw=mysqli_fetch_array($qry))
 	<div class="product">		
 		<div class="product-image">
 			<div class="image">
-				<a href="product-details.php?pid=<?php echo htmlentities($rw['id']);?>"><img  src="assets/images/blank.gif" data-echo="admin/productimages/<?php echo htmlentities($rw['id']);?>/<?php echo htmlentities($rw['productImage1']);?>" width="150" height="240" alt=""></a>
+			<a href="product-details.php?pid=<?php echo htmlentities($rw['pid']);?>"><img src="../images/<?php  echo $rw['image'];?>"width='160' height='220'>
 			</div><!-- /.image -->			
 
 			                   		   
@@ -514,15 +501,15 @@ while($rw=mysqli_fetch_array($qry))
 			
 		
 		<div class="product-info text-left">
-			<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($rw['id']);?>"><?php echo htmlentities($rw['productName']);?></a></h3>
-			<div class="rating rateit-small"></div>
+			<h3 class="name"><a href="product-details.php?pid=<?php echo htmlentities($rw['pid']);?>"><?php echo htmlentities($rw['pname']);?></a></h3>
+			
 			<div class="description"></div>
 
 			<div class="product-price">	
 				<span class="price">
-					Rs.<?php echo htmlentities($rw['productPrice']);?>			</span>
+					Rs.<?php echo htmlentities($rw['price2']);?>			</span>
 										     <span class="price-before-discount">Rs.
-										     <?php echo htmlentities($rw['productPriceBeforeDiscount']);?></span>
+										     <?php echo htmlentities($rw['price1']);?></span>
 									
 			</div><!-- /.product-price -->
 			
@@ -558,10 +545,51 @@ while($rw=mysqli_fetch_array($qry))
 			</div><!-- /.col -->
 			<div class="clearfix"></div>
 		</div>
-<?php include('includes/brands-slider.php');?>
+
 </div>
 </div>
 <?php include('includes/footer.php');?>
+
+<script>
+var closebtns = document.getElementsByClassName("close");
+var i;
+
+for (i = 0; i < closebtns.length; i++) {
+  closebtns[i].addEventListener("click", function() {
+    this.parentElement.style.display = 'none';
+  });
+}
+</script>
+<script>
+// Add event listeners to each star element
+var stars = document.querySelectorAll(".star");
+stars.forEach(function(star) {
+  star.addEventListener("click", function() {
+    // Send an AJAX request to the server to update the rating
+    var rating = star.getAttribute("data-rating");
+    var pid = "123"; // Replace with the actual item ID
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        // Update the displayed average rating
+        var averageRating = xhr.responseText;
+        document.querySelector("#average-rating").textContent = averageRating;
+        // Color the stars up to the clicked one
+        stars.forEach(function(s) {
+          if (s.getAttribute("data-rating") <= rating) {
+            s.classList.add("rated");
+          } else {
+            s.classList.remove("rated");
+          }
+        });
+      }
+    };
+    xhr.open("POST", "update_rating.php");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.send("item_id=" + pid + "&rating=" + rating);
+  });
+});
+</script>
 
 	<script src="assets/js/jquery-1.11.1.min.js"></script>
 	
@@ -578,27 +606,3 @@ while($rw=mysqli_fetch_array($qry))
     <script src="assets/js/bootstrap-select.min.js"></script>
     <script src="assets/js/wow.min.js"></script>
 	<script src="assets/js/scripts.js"></script>
-
-	<!-- For demo purposes – can be removed on production -->
-	
-	<script src="switchstylesheet/switchstylesheet.js"></script>
-	
-	<script>
-		$(document).ready(function(){ 
-			$(".changecolor").switchstylesheet( { seperator:"color"} );
-			$('.show-theme-options').click(function(){
-				$(this).parent().toggleClass('open');
-				return false;
-			});
-		});
-
-		$(window).bind("load", function() {
-		   $('.show-theme-options').delay(2000).trigger('click');
-		});
-	</script>
-	<!-- For demo purposes – can be removed on production : End -->
-
-	
-
-</body>
-</html>
