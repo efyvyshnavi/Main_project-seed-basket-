@@ -1,6 +1,10 @@
-<?php   
-session_start(); //to ensure you are using same session
-session_destroy(); //destroy the session
-header("location:./admin-login.php"); //to redirect back to "index.php" after logging out
-exit();
+<?php
+session_start();
+$_SESSION['email']=="";
+session_unset();
+//session_destroy();
+$_SESSION['errmsg']="You have successfully logout";
 ?>
+<script language="javascript">
+document.location="../../../../../../vs/admin/seedportal/shopping/login.php";
+</script>
