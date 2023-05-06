@@ -3,9 +3,11 @@ session_start();
 include ('config.php');
 date_default_timezone_set('Asia/Kolkata');// 
 $currentTime = date( 'd-m-Y h:i:s A', time () );
+
+// Check if the user is logged in
 if (!isset($_SESSION['username'])) {
-  header("Location: admin-login.php");
-  exit();
+    header("Location: admin-login.php");
+    exit();
 }
 
 ?>
@@ -40,74 +42,34 @@ if (!isset($_SESSION['username'])) {
 		<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
-  <style>
-  .request {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 20px;
-  background-color: #f9f9f9;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-  margin-bottom: 30px;
-}
-.body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-.request h5 {
-  margin-top: 0;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border-bottom: 2px solid #ccc;
-  padding-bottom: 5px;
-}
-
-  .request p {
-    margin: 0;
-  }
-  .request strong {
-    font-weight: bold;
-  }
-</style>
-<style>
-    .request button {
-  margin-top: 10px;
-  margin-right: 5px;
-  padding: 6px 12px;
-  border-radius: 3px;
+    
+    <style>
+  .edit-btn {
+  background-color: #007bff;
+  color: #fff;
   border: none;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 18px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.request button.btn-success {
-  background-color: #28a745;
-  color: #fff;
+.edit-btn:hover {
+  background-color: #0062cc;
 }
-
-.request button.btn-danger {
-  background-color: #dc3545;
-  color: #fff;
+.edit-btn {
+  font-size: 15px; /* change the font size */
+  padding: 8px 12px; /* change the padding */
 }
-</style>
-<style>
-   .accepted {
-    background-color: #c1ffc1;
-}
-.rejected {
-    background-color: #ff9999;
+.edit-btn {
+  height: 31px;
+  width: 78px;
+  text-align: center;
 }
 </style>
 
-
-
-  <!-- =======================================================
-  * Template Name: NiceAdmin - v2.5.0
-  * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+ 
 </head>
 
 <body>
@@ -139,8 +101,7 @@ if (!isset($_SESSION['username'])) {
           </a>
         </li><!-- End Search Icon-->
 
-        
-
+             
 
         <li class="nav-item dropdown pe-3">
 
@@ -153,6 +114,7 @@ if(isset($_SESSION['username'])){
 } 
 ?>
             </span>
+            
           </a><!-- End Profile Iamge Icon -->
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
@@ -171,7 +133,7 @@ while($row=mysqli_fetch_array($query))
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+              <a class="dropdown-item d-flex align-items-center" href="admin-profile.php">
                 <i class="bi bi-person"></i>
                 <span>My Profile</span>
               </a>
@@ -180,10 +142,7 @@ while($row=mysqli_fetch_array($query))
               <hr class="dropdown-divider">
             </li>
 
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
+          
             <li>
               <a class="dropdown-item d-flex align-items-center" href="logout.php">
                 <i class="bi bi-box-arrow-right"></i>
@@ -406,11 +365,11 @@ if ($new_payments_count > 0) {
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Requests</h1>
+      <h1>Payments</h1>
       <nav>
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-          <li class="breadcrumb-item active">Requests</li>
+          <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+          <li class="breadcrumb-item active">Payments</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -428,51 +387,62 @@ if ($new_payments_count > 0) {
             <div class="col-12">
               <div class="card recent-sales overflow-auto">
                 <div class="card-body">
-               
-                <h5 class="card-title"></h5>
-                <?php 
-$query = mysqli_query($conn, "SELECT sellerreg.sellerid, sellerreg.fname, sellerreg.phoneno, tbl_requests.request_id, tbl_requests.type, tbl_requests.details, tbl_requests.requesttime, tbl_requests.status FROM tbl_requests JOIN sellerreg ON tbl_requests.sellerid=sellerreg.sellerid");
-$num = mysqli_num_rows($query);
+                <div class="filter">
+                
+            </div>
 
-if ($num > 0) {
-  while ($row = mysqli_fetch_array($query)) {
-    $status = $row['status']; // fetch the status
-    
-    // display the request details and status
-echo "<div class='request'>";
-echo "<h5>Request " . htmlentities($row['request_id']) . "</h5>";
-echo "<p><strong>First Name:</strong> " . htmlentities($row['fname']) . "</p>";
-echo "<p><strong>Phone No:</strong> " . htmlentities($row['phoneno']) . "</p>";
-echo "<p><strong>Type:</strong> " . htmlentities($row['type']) . "</p>";
-echo "<p><strong>Details:</strong> " . htmlentities($row['details']) . "</p>";
-echo "<p><strong>Request Time:</strong> " . htmlentities($row['requesttime']) . "</p>";
-if ($status == 'Accepted') {
-    echo "<p class='accepted'><strong>Status:</strong> " . htmlentities($row['status']) . "</p>";
-} else if ($status == 'Rejected') {
-    echo "<p class='rejected'><strong>Status:</strong> " . htmlentities($row['status']) . "</p>";
-} else {
-    echo "<p><strong>Status:</strong> " . htmlentities($row['status']) . "</p>";
-}
+                  <h5 class="card-title">Payments</h5>
 
-// display the accept/reject buttons or status message based on the status
-if ($status == 'Pending') {
-    echo "<form method='post' action='update_request.php'>";
-    echo "<input type='hidden' name='request_id' value='" . $row['request_id'] . "'>";
-    echo "<button type='submit' name='action' value='accept'>Accept</button>";
-    echo "<button type='submit' name='action' value='reject'>Reject</button>";
-    echo "</form>";
-}
+                  <table class="table table-borderless datatable">
+                    <thead>
+                      <tr>
+                        <th scope="col">Sl.No</th>
+                        <th scope="col">Sellername</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">For the month</th>
+                        <th scope="col">Received on</th>
+                        
+                      </tr>
+                    </thead>
+                    <tbody>
+                                       
+<?php $query=mysqli_query($conn,"SELECT tbl_pay.payid,tbl_pay.timestamp, tbl_pay.pay_amount, tbl_pay.pay_status, tbl_pay.date, sellerreg.fname 
+FROM tbl_pay 
+INNER JOIN sellerreg ON tbl_pay.sellerid = sellerreg.sellerid 
+WHERE tbl_pay.pay_status = 'completed'");
+$cnt=1;
+while($row=mysqli_fetch_array($query))
+{
+?>									
+	        								
+                <tr>
+					  <td><?php echo htmlentities($cnt);?></td>
+					  <td><?php echo htmlentities($row['fname']);?></td>
+					  <td><?php echo htmlentities($row['pay_amount']) . '.00 Rs';?></td>
+                      <td><?php echo htmlentities($row['date']);?></td>
+                      <td><?php echo htmlentities($row['timestamp']);?>
+    <?php
+    $today = date('Y-m-d');
+    $payment_date = substr($row['timestamp'], 0, 10); // assuming the timestamp format is "YYYY-MM-DD HH:MM:SS"
+    if ($today == $payment_date) {
+        echo '<span class="badge bg-secondary rounded-circle" style="background-color:#C41E3A!important;">
+        
+        New
+      </span>';
+ // add your icon HTML here
+    }
+    ?>
+</td>
+					 
 
-echo "</div>";
+				
+				</tr>
+				<?php $cnt=$cnt+1; } ?>
+                      
+                    </tbody>
+                  </table>
 
-  }
-} else {
-  echo "No requests found.";
-}
-?>
-
-
-  </div>
+                </div>
 
               </div>
             </div><!-- End Recent Sales -->
@@ -504,7 +474,7 @@ echo "</div>";
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
   
-  <script>
+<script>
 <?php
   if(isset($_SESSION['status']))
      { 
@@ -519,30 +489,30 @@ echo "</div>";
 	  
 <script>
   <?php
-   if(isset($_SESSION['msg']))
+   if(isset($_SESSION['msg3']))
      { 
 	?>
 	  alertify.set('notifier','position', 'top-center');
-       alertify.success('<?= $_SESSION['msg'];?>');
+       alertify.success('<?= $_SESSION['msg3'];?>');
    	   <?php
-	   unset($_SESSION['msg']);
+	   unset($_SESSION['msg3']);
       }
       ?>
 </script>
 
 <script>
   <?php
-   if(isset($_SESSION['msg2']))
+   if(isset($_SESSION['message']))
      { 
 	?>
 	  alertify.set('notifier','position', 'top-center');
-       alertify.success('<?= $_SESSION['msg2'];?>');
+       alertify.success('<?= $_SESSION['message'];?>');
    	   <?php
-	   unset($_SESSION['msg2']);
+	   unset($_SESSION['message']);
       }
       ?>
 </script>
-	  <script src="app.js"></script>
+
 </body>
 
 </html>
